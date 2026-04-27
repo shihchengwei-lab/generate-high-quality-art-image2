@@ -1,6 +1,6 @@
 ---
 name: generate-high-quality-art-image2
-description: Generate production-quality single-image game art, deity illustrations, character cards, story illustrations, key visuals, and promotional artwork using Image 2.0 / gpt-image-2 with one or two reference images. Use when the user asks for polished art generation, reference‑image‑based generation, character consistency, quality improvement, negative prompts, artifact suppression, clothing cohesion, anatomy correction, or high‑quality visual prompt planning. Do not use for sprite sheets, animation frames, tilemaps, transparent‑background game assets, UI icon batches, collision data, or asset‑manifest integration.
+description: Generate production-quality single-image game art, deity illustrations, character cards, story illustrations, key visuals, and promotional artwork using Image 2.0 / gpt-image-2 with one or two reference images. Use when the user asks for polished art generation, reference-image-based generation, character consistency, quality improvement, negative prompts, artifact suppression, clothing cohesion, anatomy correction, or high-quality visual prompt planning. Do not use for sprite sheets, animation frames, tilemaps, transparent-background game assets, UI icon batches, collision data, or asset-manifest integration. Also do not use for sprite sheets, do not use for tilemaps, and do not use for transparent-background assets.
 ---
 
 # Generate High Quality Art with Image 2.0

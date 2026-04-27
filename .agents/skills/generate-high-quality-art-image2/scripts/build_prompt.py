@@ -36,38 +36,53 @@ except ImportError as exc:
     raise SystemExit("Missing dependency: pyyaml. Install with `pip install pyyaml`.") from exc
 
 
-NEGATIVE_MODULES: Dict[str, str] = {
-    "universal_render_cleanliness": (
-        "Keep the rendering clean and stable, with controlled texture detail and smooth material transitions. "
-        "Avoid render artifacts, high-frequency artifacts, texture fragmentation, fragmented texture, broken texture, "
-        "scratch-like lines, scraped paint texture, chipped paint effect, peeling texture, grunge scratches, dirty scratches, "
-        "noisy line artifacts, random thin white lines, chaotic micro-lines, excessive hairline details, over-sharpened details, "
-        "over-detailed highlights, and specular noise."
-    ),
-    "lighting_highlight_noise": (
-        "Keep the lighting direction consistent and controlled. Use clean controlled highlights, soft sacred glow, coherent shading, "
-        "and restrained atmospheric particles. Avoid noisy highlights, scattered highlights, broken lighting, inconsistent shading, "
-        "shading artifacts, harsh edge halos, edge haloing, artificial glow noise, glitter noise, snow noise over the subject, "
-        "visual clutter, messy translucent overlays, excessive digital glyphs, unreadable floating text, and random code fragments."
-    ),
-    "background_material_stability": (
-        "Keep the background clean, intentional, and visually coherent. Use smooth gradients, natural material transitions, readable depth, "
-        "and controlled surface detail. Avoid noisy background symbols, fractured fabric texture, wrinkled plastic texture, dirty glossy surface, "
-        "muddy white tones, patchy lighting, low-frequency inconsistency, lack of smooth gradients, unnatural material transition, over-constrained details, "
-        "and over-designed composition."
-    ),
-    "clothing_fragmentation": (
-        "Design the costume with a clear hierarchy: readable silhouette, coherent layers, intentional ornaments, controlled pattern density, "
-        "and clean fabric structure. Avoid overly detailed clothing, excessive decoration, fragmented costume, too many accessories, "
-        "cluttered outfit, complex patterns, messy design, overdesigned clothing, random ornaments, chaotic details, noisy texture, excessive ribbons, "
-        "and excessive frills."
-    ),
-    "anatomy_body": (
-        "Use natural anatomy, balanced posture, believable limb placement, readable hands, correct finger count, stable shoulders and wrists, "
-        "coherent body proportions, and stable perspective. Avoid bad anatomy, deformed body, broken limbs, twisted joints, unnatural pose, "
-        "impossible pose, dislocated arms, extra arms, extra legs, missing limbs, malformed hands, fused fingers, extra fingers, wrong proportions, "
-        "distorted torso, bent spine, unnatural balance, floating limbs, broken perspective, and asymmetrical body errors."
-    ),
+NEGATIVE_MODULES: Dict[str, Dict[str, str]] = {
+    "universal_render_cleanliness": {
+        "title": "Universal render cleanliness",
+        "prompt": (
+            "Keep the rendering clean and stable, with controlled texture detail and smooth material transitions. "
+            "Avoid render artifacts, high-frequency artifacts, texture fragmentation, fragmented texture, broken texture, "
+            "scratch-like lines, scraped paint texture, chipped paint effect, peeling texture, grunge scratches, dirty scratches, "
+            "noisy line artifacts, random thin white lines, chaotic micro-lines, excessive hairline details, over-sharpened details, "
+            "over-detailed highlights, and specular noise."
+        ),
+    },
+    "lighting_highlight_noise": {
+        "title": "Lighting/highlight noise",
+        "prompt": (
+            "Keep the lighting direction consistent and controlled. Use clean controlled highlights, soft sacred glow, coherent shading, "
+            "and restrained atmospheric particles. Avoid noisy highlights, scattered highlights, broken lighting, inconsistent shading, "
+            "shading artifacts, harsh edge halos, edge haloing, artificial glow noise, glitter noise, snow noise over the subject, "
+            "visual clutter, messy translucent overlays, excessive digital glyphs, unreadable floating text, and random code fragments."
+        ),
+    },
+    "background_material_stability": {
+        "title": "Background/material stability",
+        "prompt": (
+            "Keep the background clean, intentional, and visually coherent. Use smooth gradients, natural material transitions, readable depth, "
+            "and controlled surface detail. Avoid noisy background symbols, fractured fabric texture, wrinkled plastic texture, dirty glossy surface, "
+            "muddy white tones, patchy lighting, low-frequency inconsistency, lack of smooth gradients, unnatural material transition, over-constrained details, "
+            "and over-designed composition."
+        ),
+    },
+    "clothing_fragmentation": {
+        "title": "Clothing fragmentation",
+        "prompt": (
+            "Design the costume with a clear hierarchy: readable silhouette, coherent layers, intentional ornaments, controlled pattern density, "
+            "and clean fabric structure. Avoid overly detailed clothing, excessive decoration, fragmented costume, too many accessories, "
+            "cluttered outfit, complex patterns, messy design, overdesigned clothing, random ornaments, chaotic details, noisy texture, excessive ribbons, "
+            "and excessive frills."
+        ),
+    },
+    "anatomy_body": {
+        "title": "Anatomy/body structure",
+        "prompt": (
+            "Use natural anatomy, balanced posture, believable limb placement, readable hands, correct finger count, stable shoulders and wrists, "
+            "coherent body proportions, and stable perspective. Avoid bad anatomy, deformed body, broken limbs, twisted joints, unnatural pose, "
+            "impossible pose, dislocated arms, extra arms, extra legs, missing limbs, malformed hands, fused fingers, extra fingers, wrong proportions, "
+            "distorted torso, bent spine, unnatural balance, floating limbs, broken perspective, and asymmetrical body errors."
+        ),
+    },
 }
 
 
@@ -84,16 +99,16 @@ def validate_spec(spec: Dict[str, Any]) -> None:
     """Validate required fields and reference image count."""
     refs = spec.get("reference_images", [])
     if not isinstance(refs, list):
-        raise ValueError("reference_images must be a list.")
+        raise SystemExit("reference_images must be a list.")
     if len(refs) not in (1, 2):
-        raise ValueError("This skill supports exactly one or two reference images.")
+        raise SystemExit("This skill supports exactly one or two reference images.")
 
     if not spec.get("asset_name"):
-        raise ValueError("asset_name is required.")
+        raise SystemExit("asset_name is required.")
     if not spec.get("intended_use"):
-        raise ValueError("intended_use is required.")
+        raise SystemExit("intended_use is required.")
     if not spec.get("image_type"):
-        raise ValueError("image_type is required.")
+        raise SystemExit("image_type is required.")
 
 
 def timestamp() -> str:
@@ -109,10 +124,10 @@ def make_output_dir(base: Path, asset_name: str) -> Path:
     return out_dir
 
 
-def selected_negative_modules(spec: Dict[str, Any]) -> Dict[str, str]:
+def selected_negative_modules(spec: Dict[str, Any]) -> Dict[str, Dict[str, str]]:
     """Select negative prompt modules based on the spec's negative_profile."""
     profile = spec.get("negative_profile") or {}
-    selected: Dict[str, str] = {}
+    selected: Dict[str, Dict[str, str]] = {}
 
     # Always include universal cleanliness.
     selected["universal_render_cleanliness"] = NEGATIVE_MODULES["universal_render_cleanliness"]
@@ -149,7 +164,7 @@ def build_reference_text(spec: Dict[str, Any]) -> str:
     )
 
 
-def build_prompt(spec: Dict[str, Any], negative_blocks: Dict[str, str]) -> str:
+def build_prompt(spec: Dict[str, Any], negative_blocks: Dict[str, Dict[str, str]]) -> str:
     """Construct the final structured prompt from the spec and selected negative blocks."""
     subject = spec.get("subject", {}) or {}
     composition = spec.get("composition", {}) or {}
@@ -210,8 +225,8 @@ def build_prompt(spec: Dict[str, Any], negative_blocks: Dict[str, str]) -> str:
     ])
 
     # Append negative modules in arbitrary order but sorted by key for determinism
-    for k, v in negative_blocks.items():
-        prompt_parts.append(v)
+    for module in negative_blocks.values():
+        prompt_parts.append(module["prompt"])
 
     prompt_parts.extend([
         "",
@@ -234,24 +249,107 @@ def write_reference_interpretation(out_dir: Path, spec: Dict[str, Any]) -> None:
     ]
 
     if len(refs) == 1:
+        ref = refs[0] if refs else {}
+        preserve = ref.get("preserve") or [
+            "face identity",
+            "age impression",
+            "hairstyle",
+            "body type",
+            "core silhouette",
+            "major costume structure",
+            "symbolic props",
+            "main color palette",
+            "emotional tone",
+        ]
         lines.extend([
             "## Reference image 1",
             "",
             "Role: primary identity and design reference.",
             "",
-            "Preserve: face, age impression, hairstyle, silhouette, costume structure, symbolic details, main palette, emotional tone.",
+            "Visual traits to preserve:",
             "",
-            "Ignore: artifacts, compression noise, broken anatomy, random symbols, background clutter, accidental defects.",
+        ])
+        lines.extend(f"- {item}" for item in preserve)
+        lines.extend([
+            "",
+            "Visual traits to ignore:",
+            "",
+            "- accidental artifacts",
+            "- texture noise",
+            "- compression marks",
+            "- broken anatomy",
+            "- distorted fingers",
+            "- random background symbols",
+            "- low-quality rendering defects",
+            "- stray text or watermarks",
+            "- background clutter",
         ])
     else:
+        ref1 = refs[0] if len(refs) > 0 else {}
+        ref2 = refs[1] if len(refs) > 1 else {}
+        preserve_1 = ref1.get("preserve") or [
+            "face identity",
+            "age impression",
+            "hairstyle",
+            "body type",
+            "character design",
+            "clothing structure",
+            "symbolic details",
+            "main palette",
+            "silhouette",
+        ]
+        preserve_2 = ref2.get("preserve") or [
+            "pose",
+            "camera angle",
+            "composition",
+            "lighting",
+            "color mood",
+            "background atmosphere",
+            "rendering mood",
+        ]
         lines.extend([
             "## Reference image 1",
             "",
             "Role: primary identity / face / costume / symbolic design reference.",
             "",
+            "Visual traits to preserve:",
+            "",
+        ])
+        lines.extend(f"- {item}" for item in preserve_1)
+        lines.extend([
+            "",
+            "Visual traits to ignore:",
+            "",
+            "- accidental artifacts",
+            "- texture noise",
+            "- compression marks",
+            "- broken anatomy",
+            "- distorted fingers",
+            "- random background symbols",
+            "- low-quality rendering defects",
+            "- stray text or watermarks",
+            "- background clutter",
+            "",
             "## Reference image 2",
             "",
             "Role: secondary pose / lighting / camera / composition / environmental atmosphere reference.",
+            "",
+            "Visual traits to preserve:",
+            "",
+        ])
+        lines.extend(f"- {item}" for item in preserve_2)
+        lines.extend([
+            "",
+            "Visual traits to ignore:",
+            "",
+            "- alternate face identity",
+            "- alternate age impression",
+            "- alternate hairstyle",
+            "- alternate symbolic identity",
+            "- alternate costume design",
+            "- accidental artifacts",
+            "- random symbols",
+            "- unreadable text",
             "",
             "## Conflict rule",
             "",
@@ -363,7 +461,9 @@ def main() -> None:
     (out_dir / "final_prompt.txt").write_text(final_prompt, encoding="utf-8")
     (out_dir / "negative_prompt_used.md").write_text(
         "# Negative Prompt Used\n\n"
-        + "\n\n".join(f"## {k}\n\n{v}" for k, v in negative_blocks.items())
+        + "\n\n".join(
+            f"## {module['title']}\n\n{module['prompt']}" for module in negative_blocks.values()
+        )
         + "\n",
         encoding="utf-8",
     )
