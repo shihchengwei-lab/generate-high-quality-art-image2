@@ -1,0 +1,75 @@
+asset_name: "wishwalking_deity_card_001"
+intended_use: "mobile game deity card illustration"
+image_type: "deity_card"
+run_generation: false
+
+model:
+  name: "gpt-image-2"
+  quality: "high"
+  size: "1024x1536"
+  output_format: "png"
+
+reference_images:
+  - path: "./refs/ref_identity.png"
+    role: "primary_identity_costume"
+    preserve:
+      - "face structure"
+      - "age impression"
+      - "hairstyle"
+      - "core costume silhouette"
+      - "symbolic identity"
+      - "main color palette"
+  - path: "./refs/ref_lighting_pose.png"
+    role: "secondary_pose_lighting_composition"
+    preserve:
+      - "pose direction"
+      - "camera angle"
+      - "lighting mood"
+      - "composition"
+      - "environmental atmosphere"
+
+subject:
+  description: "a benevolent Taiwanese folk deity appearing during a quiet blessing moment"
+  personality:
+    - "sacred"
+    - "warm"
+    - "compassionate"
+    - "emotionally grounded"
+  must_keep:
+    - "gentle divine expression"
+    - "warm gold and amber palette"
+    - "clear ceremonial robe silhouette"
+    - "human-readable hands"
+    - "controlled sacred glow"
+    - "no random text or floating glyphs"
+
+composition:
+  framing: "half-body portrait"
+  camera: "slightly low angle"
+  pose: "calm blessing gesture"
+  layout: "centered but not stiff"
+  background: "soft temple atmosphere with abstract incense glow, not overly literal"
+  aspect_ratio: "2:3"
+
+style_direction:
+  rendering: "polished 2D illustration"
+  mood: "sacred, warm, quiet, emotionally grounded"
+  palette: "warm gold, amber, soft cream, muted temple red accents"
+  detail_density: "high quality but controlled, no clutter"
+
+negative_profile:
+  universal_render_cleanliness: true
+  lighting_highlight_noise: true
+  background_material_stability: true
+  clothing_fragmentation: true
+  anatomy_body: true
+
+project_style_bible:
+  use_wishwalking_style_bible: true
+
+outputs:
+  save_prompt: true
+  save_negative_prompt: true
+  save_reference_interpretation: true
+  save_generation_settings: true
+  save_quality_checklist: true
