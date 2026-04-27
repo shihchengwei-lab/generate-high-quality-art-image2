@@ -4,8 +4,9 @@ This folder contains sample input specs and prompt examples.
 
 Files:
 
-- `sample_spec.yaml` — example input configuration for building a prompt
-- `sample_prompt.txt` — example final prompt output
+- `sample_spec.yaml` - example single-image input configuration
+- `sample_multi_image_spec.yaml` - example multi-image consistency input configuration
+- `sample_prompt.txt` - example final prompt output
 
 Do not store user reference images here by default.
 

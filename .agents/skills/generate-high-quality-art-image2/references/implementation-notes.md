@@ -2,14 +2,16 @@
 
 ## Workflow
 
-The skill has four phases:
+The skill has six phases:
 
-1. **Analyze**
-2. **Build Prompt**
-3. **Generate**
-4. **Inspect**
+1. Analyze
+2. Select negative modules
+3. Build prompt
+4. Score prompt
+5. Generate only when explicitly authorized
+6. Inspect and revise
 
-## Phase 1 — Analyze
+## Analyze
 
 Inputs:
 
@@ -22,18 +24,34 @@ Actions:
 - identify intended use
 - identify image type
 - assign reference image roles
-- identify must‑keep traits
-- identify must‑avoid traits
-- select negative prompt modules
+- identify fixed identity traits
+- identify variable scene traits
+- identify must-avoid traits
 - decide output size and quality
 
 Outputs:
 
 - `reference_interpretation.md`
 - assumptions section
-- selected negative modules
 
-## Phase 2 — Build Prompt
+## Negative Module Selection
+
+Use `scripts/lib/negative_selector.py`.
+
+Default mode is `auto`. It always includes render cleanliness and adds lighting, background, clothing, and anatomy modules only when the spec implies those risks.
+
+Manual modes:
+
+- `mode: manual`
+- `mode: auto_with_overrides`
+- legacy module booleans, treated as `legacy_manual`
+
+Outputs:
+
+- `negative_prompt_used.md`
+- `negative_module_selection.md`
+
+## Build Prompt
 
 Use:
 
@@ -41,14 +59,58 @@ Use:
 - `references/reference-image-policy.md`
 - `references/negative-prompts.md`
 - `references/wishwalking-style-bible.md` when relevant
+- `references/negative-module-selection.md`
 
 Outputs:
 
 - `final_prompt.txt`
-- `negative_prompt_used.md`
 - `generation_settings.json`
+- `quality_checklist.md`
 
-## Phase 3 — Generate
+## Prompt Scoring
+
+Use `scripts/lib/prompt_scorer.py`.
+
+Prompt scoring is rule-based and deterministic. It does not call an LLM, Image API, or external service.
+
+Outputs:
+
+- `prompt_score.json`
+- `prompt_score.md`
+
+Recommendation rules:
+
+```text
+average_score >= 4.2 and no critical issues -> pass
+average_score >= 3.4 and no critical issues -> revise
+average_score < 3.4 -> block
+any critical issue -> block
+```
+
+## Multi-Image Consistency
+
+Use `scripts/build_multi_image_prompts.py` and `scripts/lib/consistency.py`.
+
+The multi-image workflow separates:
+
+- shared identity canon
+- fixed traits
+- allowed variable traits
+- forbidden variable traits
+- per-image scene, pose, framing, and lighting
+
+Outputs:
+
+- `consistency_guide.md`
+- `variation_matrix.md`
+- `generation_settings.json`
+- `negative_module_selection.md`
+- `shared_negative_prompt_used.md`
+- per-image prompt files
+- per-image prompt score files
+- `multi_image_summary.md`
+
+## Generate
 
 Only run generation if:
 
@@ -60,14 +122,12 @@ If `run_generation` is missing or false, do not call the image API.
 
 Use `gpt-image-2`.
 
-If reference images are provided, use an image editing / reference-image workflow.
-
-Outputs:
+Outputs only when authorized:
 
 - `result.png`
-- updated `generation_settings.json`
+- `generation_result.json`
 
-## Phase 4 — Inspect
+## Inspect
 
 Review the result if available.
 
@@ -75,6 +135,7 @@ Outputs:
 
 - `quality_checklist.md`
 - `revision_prompt.txt` if needed
+- optional refreshed `prompt_score.json` and `prompt_score.md`
 
 ## Recommended defaults
 
@@ -88,17 +149,17 @@ Outputs:
 | key visual landscape | `1536x1024` or `2560x1440` | `high` |
 | square portrait/card | `1024x1024` | `high` |
 
-## Cost‑control rule
+## Cost-Control Rule
 
-The default sample spec must set:
+The default sample specs must set:
 
 ```yaml
 run_generation: false
 ```
 
-Do not run high‑quality generations automatically during setup or tests.
+Do not run high-quality generations automatically during setup or tests.
 
-## Failure handling
+## Failure Handling
 
 If output quality is poor:
 
@@ -107,14 +168,3 @@ If output quality is poor:
 3. Add a positive correction.
 4. Create `revision_prompt.txt`.
 5. Do not blindly rerun without a targeted revision.
-
-Examples:
-
-- **Failure:** hands malformed  
-  **Revision:** "Preserve the same composition, but redraw the hands with natural anatomy, readable fingers, correct finger count, and stable wrist alignment."
-
-- **Failure:** clothing fragmented  
-  **Revision:** "Preserve the costume concept, but simplify the robe into coherent layers with a clear silhouette and intentional ornament hierarchy."
-
-- **Failure:** noisy glow  
-  **Revision:** "Preserve the warm divine atmosphere, but reduce glitter noise, edge halos, and scattered highlights; use controlled soft amber glow."

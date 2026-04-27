@@ -1,151 +1,32 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-"""
-build_prompt.py
-
-This script reads a YAML specification describing a desired image and produces a prompt package
-without calling any image API. It validates input, selects appropriate negative prompt modules,
-constructs a structured prompt, and writes several output files into a timestamped job directory.
-
-Usage example:
-
-    python .agents/skills/generate-high-quality-art-image2/scripts/build_prompt.py \
-      --spec .agents/skills/generate-high-quality-art-image2/assets/sample_spec.yaml \
-      --out outputs
-
-The resulting job directory will contain:
-  - final_prompt.txt
-  - negative_prompt_used.md
-  - reference_interpretation.md
-  - generation_settings.json
-  - quality_checklist.md
-
-By default the spec should set `run_generation: false` to prevent accidental API calls.
-"""
-
 import argparse
-import json
-from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
-try:
-    import yaml  # type: ignore
-except ImportError as exc:
-    raise SystemExit("Missing dependency: pyyaml. Install with `pip install pyyaml`.") from exc
-
-
-NEGATIVE_MODULES: Dict[str, Dict[str, str]] = {
-    "universal_render_cleanliness": {
-        "title": "Universal render cleanliness",
-        "prompt": (
-            "Keep the rendering clean and stable, with controlled texture detail and smooth material transitions. "
-            "Avoid render artifacts, high-frequency artifacts, texture fragmentation, fragmented texture, broken texture, "
-            "scratch-like lines, scraped paint texture, chipped paint effect, peeling texture, grunge scratches, dirty scratches, "
-            "noisy line artifacts, random thin white lines, chaotic micro-lines, excessive hairline details, over-sharpened details, "
-            "over-detailed highlights, and specular noise."
-        ),
-    },
-    "lighting_highlight_noise": {
-        "title": "Lighting/highlight noise",
-        "prompt": (
-            "Keep the lighting direction consistent and controlled. Use clean controlled highlights, soft sacred glow, coherent shading, "
-            "and restrained atmospheric particles. Avoid noisy highlights, scattered highlights, broken lighting, inconsistent shading, "
-            "shading artifacts, harsh edge halos, edge haloing, artificial glow noise, glitter noise, snow noise over the subject, "
-            "visual clutter, messy translucent overlays, excessive digital glyphs, unreadable floating text, and random code fragments."
-        ),
-    },
-    "background_material_stability": {
-        "title": "Background/material stability",
-        "prompt": (
-            "Keep the background clean, intentional, and visually coherent. Use smooth gradients, natural material transitions, readable depth, "
-            "and controlled surface detail. Avoid noisy background symbols, fractured fabric texture, wrinkled plastic texture, dirty glossy surface, "
-            "muddy white tones, patchy lighting, low-frequency inconsistency, lack of smooth gradients, unnatural material transition, over-constrained details, "
-            "and over-designed composition."
-        ),
-    },
-    "clothing_fragmentation": {
-        "title": "Clothing fragmentation",
-        "prompt": (
-            "Design the costume with a clear hierarchy: readable silhouette, coherent layers, intentional ornaments, controlled pattern density, "
-            "and clean fabric structure. Avoid overly detailed clothing, excessive decoration, fragmented costume, too many accessories, "
-            "cluttered outfit, complex patterns, messy design, overdesigned clothing, random ornaments, chaotic details, noisy texture, excessive ribbons, "
-            "and excessive frills."
-        ),
-    },
-    "anatomy_body": {
-        "title": "Anatomy/body structure",
-        "prompt": (
-            "Use natural anatomy, balanced posture, believable limb placement, readable hands, correct finger count, stable shoulders and wrists, "
-            "coherent body proportions, and stable perspective. Avoid bad anatomy, deformed body, broken limbs, twisted joints, unnatural pose, "
-            "impossible pose, dislocated arms, extra arms, extra legs, missing limbs, malformed hands, fused fingers, extra fingers, wrong proportions, "
-            "distorted torso, bent spine, unnatural balance, floating limbs, broken perspective, and asymmetrical body errors."
-        ),
-    },
-}
+from lib.negative_selector import (
+    explain_negative_selection,
+    select_negative_modules,
+    selected_negative_blocks,
+)
+from lib.output_writer import make_output_dir, render_negative_prompt, write_prompt_package
+from lib.prompt_scorer import render_score_markdown, score_prompt_package
+from lib.spec_io import load_yaml, write_json, write_text
 
 
-def load_spec(path: Path) -> Dict[str, Any]:
-    """Load a YAML specification file and return it as a dictionary."""
-    with path.open("r", encoding="utf-8") as f:
-        data = yaml.safe_load(f)
-    if not isinstance(data, dict):
-        raise ValueError("Spec must be a YAML mapping.")
-    return data
-
-
-def validate_spec(spec: Dict[str, Any]) -> None:
-    """Validate required fields and reference image count."""
+def validate_spec(spec: dict[str, Any]) -> None:
     refs = spec.get("reference_images", [])
     if not isinstance(refs, list):
         raise SystemExit("reference_images must be a list.")
     if len(refs) not in (1, 2):
         raise SystemExit("This skill supports exactly one or two reference images.")
-
-    if not spec.get("asset_name"):
-        raise SystemExit("asset_name is required.")
-    if not spec.get("intended_use"):
-        raise SystemExit("intended_use is required.")
-    if not spec.get("image_type"):
-        raise SystemExit("image_type is required.")
+    for key in ["asset_name", "intended_use", "image_type"]:
+        if not spec.get(key):
+            raise SystemExit(f"{key} is required.")
 
 
-def timestamp() -> str:
-    """Return a timestamp string for directory naming."""
-    return datetime.now().strftime("%Y%m%d-%H%M%S")
-
-
-def make_output_dir(base: Path, asset_name: str) -> Path:
-    """Create and return a safe output directory path based on asset_name and current time."""
-    safe_name = "".join(c if c.isalnum() or c in ("-", "_") else "_" for c in asset_name)
-    out_dir = base / safe_name / timestamp()
-    out_dir.mkdir(parents=True, exist_ok=True)
-    return out_dir
-
-
-def selected_negative_modules(spec: Dict[str, Any]) -> Dict[str, Dict[str, str]]:
-    """Select negative prompt modules based on the spec's negative_profile."""
-    profile = spec.get("negative_profile") or {}
-    selected: Dict[str, Dict[str, str]] = {}
-
-    # Always include universal cleanliness.
-    selected["universal_render_cleanliness"] = NEGATIVE_MODULES["universal_render_cleanliness"]
-
-    for key in [
-        "lighting_highlight_noise",
-        "background_material_stability",
-        "clothing_fragmentation",
-        "anatomy_body",
-    ]:
-        if profile.get(key) is True:
-            selected[key] = NEGATIVE_MODULES[key]
-
-    return selected
-
-
-def build_reference_text(spec: Dict[str, Any]) -> str:
-    """Build textual description of how to use reference images."""
+def build_reference_text(spec: dict[str, Any]) -> str:
     refs = spec.get("reference_images", [])
     if len(refs) == 1:
         return (
@@ -154,7 +35,6 @@ def build_reference_text(spec: Dict[str, Any]) -> str:
             "symbolic details, main palette, and emotional tone. Do not copy artifacts, compression noise, "
             "broken anatomy, random symbols, or background clutter from the reference."
         )
-
     return (
         "Use reference image 1 as the primary identity and costume reference. Preserve the face structure, "
         "hairstyle, age impression, core costume silhouette, symbolic identity, and main palette.\n\n"
@@ -164,92 +44,72 @@ def build_reference_text(spec: Dict[str, Any]) -> str:
     )
 
 
-def build_prompt(spec: Dict[str, Any], negative_blocks: Dict[str, Dict[str, str]]) -> str:
-    """Construct the final structured prompt from the spec and selected negative blocks."""
-    subject = spec.get("subject", {}) or {}
-    composition = spec.get("composition", {}) or {}
-    style = spec.get("style_direction", {}) or {}
-    model = spec.get("model", {}) or {}
+def build_prompt(spec: dict[str, Any], negative_blocks: dict[str, dict[str, str]]) -> str:
+    subject = spec.get("subject", {}) if isinstance(spec.get("subject"), dict) else {}
+    composition = spec.get("composition", {}) if isinstance(spec.get("composition"), dict) else {}
+    style = spec.get("style_direction", {}) if isinstance(spec.get("style_direction"), dict) else {}
+    model = spec.get("model", {}) if isinstance(spec.get("model"), dict) else {}
 
-    subject_desc = subject.get("description", spec.get("subject", "the subject"))
-    personality = ", ".join(subject.get("personality", [])) if isinstance(subject, dict) else ""
-    must_keep = ", ".join(subject.get("must_keep", [])) if isinstance(subject, dict) else ""
-
-    framing = composition.get("framing", "single-image illustration")
-    camera = composition.get("camera", "natural camera angle")
-    pose = composition.get("pose", "natural pose")
-    layout = composition.get("layout", "balanced composition")
-    background = composition.get("background", "coherent background")
+    subject_desc = subject.get("description", "the subject")
+    personality = ", ".join(subject.get("personality", []) or [])
+    must_keep = ", ".join(subject.get("must_keep", []) or [])
     aspect_ratio = composition.get("aspect_ratio", spec.get("aspect_ratio", "auto"))
-
-    rendering = style.get("rendering", "polished 2D illustration")
-    mood = style.get("mood", "")
-    palette = style.get("palette", "")
-    detail_density = style.get("detail_density", "controlled detail density")
-
     size = model.get("size", spec.get("size", "1024x1536"))
 
-    prompt_parts: List[str] = [
+    prompt_parts = [
         f"Create a high-quality single-image illustration for {spec.get('intended_use')}.",
         "",
         build_reference_text(spec),
         "",
         f"Depict {subject_desc}.",
     ]
-
     if personality:
         prompt_parts.append(f"The subject should feel {personality}.")
     if must_keep:
         prompt_parts.append(f"Important visual traits to preserve: {must_keep}.")
 
-    prompt_parts.extend([
-        "",
-        f"Composition: {framing}, {camera}, {pose}, {layout}.",
-        f"Background: {background}.",
-        "Do not include text, logos, UI, captions, watermarks, random symbols, or floating glyphs unless explicitly requested.",
-        "",
-        f"Style: {rendering}.",
-    ])
+    prompt_parts.extend(
+        [
+            "",
+            "Costume and prop hierarchy: keep the main silhouette, symbolic costume identity, major props, and ornament priority readable before small details.",
+            f"Composition: {composition.get('framing', 'single-image illustration')}, {composition.get('camera', 'natural camera angle')}, {composition.get('pose', 'natural pose')}, {composition.get('layout', 'balanced composition')}.",
+            f"Background: {composition.get('background', 'coherent background')}.",
+            "Do not include text, logos, UI, captions, watermarks, random symbols, floating glyphs, or code fragments unless explicitly requested.",
+            "",
+            f"Style: {style.get('rendering', 'polished 2D illustration')}.",
+        ]
+    )
+    if style.get("palette"):
+        prompt_parts.append(f"Palette: {style['palette']}.")
+    if style.get("mood"):
+        prompt_parts.append(f"Mood: {style['mood']}.")
+    prompt_parts.append(f"Detail density: {style.get('detail_density', 'controlled detail density')}.")
 
-    if palette:
-        prompt_parts.append(f"Palette: {palette}.")
-    if mood:
-        prompt_parts.append(f"Mood: {mood}.")
-    prompt_parts.append(f"Detail density: {detail_density}.")
-
-    prompt_parts.extend([
-        "",
-        "Prioritize identity consistency, clean silhouette, readable costume hierarchy, natural anatomy, stable hands, coherent lighting, smooth gradients, controlled highlights, and clean background separation.",
-        "",
-        "[AVOID]",
-    ])
-
-    # Append negative modules in arbitrary order but sorted by key for determinism
-    for module in negative_blocks.values():
-        prompt_parts.append(module["prompt"])
-
-    prompt_parts.extend([
-        "",
-        f"Aspect ratio: {aspect_ratio}.",
-        f"Resolution: {size}.",
-        f"The final image should be suitable for {spec.get('intended_use')}."
-    ])
-
+    prompt_parts.extend(
+        [
+            "",
+            "Prioritize identity consistency, clean silhouette, readable costume hierarchy, natural anatomy, stable hands, coherent lighting, smooth gradients, controlled highlights, clean background separation, and mobile readability.",
+            "",
+            "[AVOID]",
+        ]
+    )
+    prompt_parts.extend(module["prompt"] for module in negative_blocks.values())
+    prompt_parts.extend(
+        [
+            "",
+            f"Aspect ratio: {aspect_ratio}.",
+            f"Resolution: {size}.",
+            f"The final image should be suitable for {spec.get('intended_use')}.",
+        ]
+    )
     return "\n".join(prompt_parts).strip() + "\n"
 
 
-def write_reference_interpretation(out_dir: Path, spec: Dict[str, Any]) -> None:
-    """Write the reference interpretation file based on reference count."""
+def build_reference_interpretation(spec: dict[str, Any]) -> str:
     refs = spec.get("reference_images", [])
-    lines = [
-        "# Reference Interpretation",
-        "",
-        f"Reference count: {len(refs)}",
-        "",
-    ]
-
+    lines = ["# Reference Interpretation", "", f"Reference count: {len(refs)}", ""]
     if len(refs) == 1:
-        ref = refs[0] if refs else {}
+        ref = refs[0]
         preserve = ref.get("preserve") or [
             "face identity",
             "age impression",
@@ -261,32 +121,36 @@ def write_reference_interpretation(out_dir: Path, spec: Dict[str, Any]) -> None:
             "main color palette",
             "emotional tone",
         ]
-        lines.extend([
-            "## Reference image 1",
-            "",
-            "Role: primary identity and design reference.",
-            "",
-            "Visual traits to preserve:",
-            "",
-        ])
+        lines.extend(
+            [
+                "## Reference image 1",
+                "",
+                f"Path: {ref.get('path', '')}",
+                f"Role: {ref.get('role', 'primary identity and design reference')}.",
+                "",
+                "Visual traits to preserve:",
+                "",
+            ]
+        )
         lines.extend(f"- {item}" for item in preserve)
-        lines.extend([
-            "",
-            "Visual traits to ignore:",
-            "",
-            "- accidental artifacts",
-            "- texture noise",
-            "- compression marks",
-            "- broken anatomy",
-            "- distorted fingers",
-            "- random background symbols",
-            "- low-quality rendering defects",
-            "- stray text or watermarks",
-            "- background clutter",
-        ])
+        lines.extend(
+            [
+                "",
+                "Visual traits to ignore:",
+                "",
+                "- accidental artifacts",
+                "- texture noise",
+                "- compression marks",
+                "- broken anatomy",
+                "- distorted fingers",
+                "- random background symbols",
+                "- low-quality rendering defects",
+                "- stray text or watermarks",
+                "- background clutter",
+            ]
+        )
     else:
-        ref1 = refs[0] if len(refs) > 0 else {}
-        ref2 = refs[1] if len(refs) > 1 else {}
+        ref1, ref2 = refs
         preserve_1 = ref1.get("preserve") or [
             "face identity",
             "age impression",
@@ -307,69 +171,76 @@ def write_reference_interpretation(out_dir: Path, spec: Dict[str, Any]) -> None:
             "background atmosphere",
             "rendering mood",
         ]
-        lines.extend([
-            "## Reference image 1",
-            "",
-            "Role: primary identity / face / costume / symbolic design reference.",
-            "",
-            "Visual traits to preserve:",
-            "",
-        ])
+        lines.extend(
+            [
+                "## Reference image 1",
+                "",
+                f"Path: {ref1.get('path', '')}",
+                f"Role: {ref1.get('role', 'primary identity / face / costume / symbolic design reference')}.",
+                "",
+                "Visual traits to preserve:",
+                "",
+            ]
+        )
         lines.extend(f"- {item}" for item in preserve_1)
-        lines.extend([
-            "",
-            "Visual traits to ignore:",
-            "",
-            "- accidental artifacts",
-            "- texture noise",
-            "- compression marks",
-            "- broken anatomy",
-            "- distorted fingers",
-            "- random background symbols",
-            "- low-quality rendering defects",
-            "- stray text or watermarks",
-            "- background clutter",
-            "",
-            "## Reference image 2",
-            "",
-            "Role: secondary pose / lighting / camera / composition / environmental atmosphere reference.",
-            "",
-            "Visual traits to preserve:",
-            "",
-        ])
+        lines.extend(
+            [
+                "",
+                "Visual traits to ignore:",
+                "",
+                "- accidental artifacts",
+                "- texture noise",
+                "- compression marks",
+                "- broken anatomy",
+                "- distorted fingers",
+                "- random background symbols",
+                "- low-quality rendering defects",
+                "- stray text or watermarks",
+                "- background clutter",
+                "",
+                "## Reference image 2",
+                "",
+                f"Path: {ref2.get('path', '')}",
+                f"Role: {ref2.get('role', 'secondary pose / lighting / camera / composition / environmental atmosphere reference')}.",
+                "",
+                "Visual traits to preserve:",
+                "",
+            ]
+        )
         lines.extend(f"- {item}" for item in preserve_2)
-        lines.extend([
+        lines.extend(
+            [
+                "",
+                "Visual traits to ignore:",
+                "",
+                "- alternate face identity",
+                "- alternate age impression",
+                "- alternate hairstyle",
+                "- alternate symbolic identity",
+                "- alternate costume design",
+                "- accidental artifacts",
+                "- random symbols",
+                "- unreadable text",
+                "",
+                "## Conflict rule",
+                "",
+                "If the two references conflict, reference image 1 wins for identity, face, age impression, hairstyle, symbolic design, and costume. Reference image 2 wins only for pose, camera, composition, lighting, and atmosphere.",
+            ]
+        )
+    lines.extend(
+        [
             "",
-            "Visual traits to ignore:",
+            "## Assumptions",
             "",
-            "- alternate face identity",
-            "- alternate age impression",
-            "- alternate hairstyle",
-            "- alternate symbolic identity",
-            "- alternate costume design",
-            "- accidental artifacts",
-            "- random symbols",
-            "- unreadable text",
-            "",
-            "## Conflict rule",
-            "",
-            "If the two references conflict, reference image 1 wins for identity, face, age impression, hairstyle, symbolic design, and costume. Reference image 2 wins only for pose, camera, composition, lighting, and atmosphere.",
-        ])
-
-    lines.extend([
-        "",
-        "## Assumptions",
-        "",
-        "- Any missing fields were filled with conservative defaults.",
-        "- The final prompt should be reviewed before generation.",
-    ])
-
-    (out_dir / "reference_interpretation.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+            "- Any missing fields were filled with conservative defaults.",
+            "- The final prompt should be reviewed before generation.",
+        ]
+    )
+    return "\n".join(lines) + "\n"
 
 
-def write_quality_checklist(out_dir: Path) -> None:
-    """Write a simplified quality checklist template."""
-    checklist = """# Quality Checklist
+def build_quality_checklist() -> str:
+    return """# Quality Checklist
 
 Score each item from 0 to 5.
 
@@ -422,13 +293,12 @@ Score each item from 0 to 5.
 - Composition is not too crowded
 - Works for intended use
 """
-    (out_dir / "quality_checklist.md").write_text(checklist, encoding="utf-8")
 
 
-def write_generation_settings(out_dir: Path, spec: Dict[str, Any]) -> None:
-    """Write the generation settings file."""
-    model = spec.get("model", {}) or {}
-    settings = {
+def build_generation_settings(spec: dict[str, Any]) -> dict[str, Any]:
+    model = spec.get("model", {}) if isinstance(spec.get("model"), dict) else {}
+    return {
+        "asset_name": spec.get("asset_name"),
         "model": model.get("name", "gpt-image-2"),
         "quality": model.get("quality", "high"),
         "size": model.get("size", spec.get("size", "1024x1536")),
@@ -438,43 +308,59 @@ def write_generation_settings(out_dir: Path, spec: Dict[str, Any]) -> None:
         "image_type": spec.get("image_type"),
         "intended_use": spec.get("intended_use"),
     }
-    (out_dir / "generation_settings.json").write_text(
-        json.dumps(settings, ensure_ascii=False, indent=2),
-        encoding="utf-8",
+
+
+def write_score_files(
+    out_dir: Path,
+    final_prompt: str,
+    generation_settings: dict[str, Any],
+    negative_prompt: str,
+    reference_interpretation: str,
+) -> None:
+    score = score_prompt_package(
+        final_prompt=final_prompt,
+        generation_settings=generation_settings,
+        negative_prompt=negative_prompt,
+        reference_interpretation=reference_interpretation,
     )
+    write_json(out_dir / "prompt_score.json", score)
+    write_text(out_dir / "prompt_score.md", render_score_markdown(score))
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Build a prompt package for high-quality Image 2.0 art.")
     parser.add_argument("--spec", required=True, help="Path to YAML spec.")
     parser.add_argument("--out", default="outputs", help="Output base directory.")
+    parser.add_argument("--score", dest="score", action="store_true", help="Write prompt scoring files.")
+    parser.add_argument("--no-score", dest="score", action="store_false", help="Skip prompt scoring files.")
+    parser.set_defaults(score=True)
     args = parser.parse_args()
 
-    spec_path = Path(args.spec)
-    spec = load_spec(spec_path)
+    spec = load_yaml(Path(args.spec))
     validate_spec(spec)
 
-    out_dir = make_output_dir(Path(args.out), spec["asset_name"])
-    negative_blocks = selected_negative_modules(spec)
+    out_dir = make_output_dir(Path(args.out), str(spec["asset_name"]))
+    selection = select_negative_modules(spec)
+    negative_blocks = selected_negative_blocks(selection)
     final_prompt = build_prompt(spec, negative_blocks)
+    negative_prompt = render_negative_prompt(negative_blocks)
+    reference_interpretation = build_reference_interpretation(spec)
+    generation_settings = build_generation_settings(spec)
 
-    (out_dir / "final_prompt.txt").write_text(final_prompt, encoding="utf-8")
-    (out_dir / "negative_prompt_used.md").write_text(
-        "# Negative Prompt Used\n\n"
-        + "\n\n".join(
-            f"## {module['title']}\n\n{module['prompt']}" for module in negative_blocks.values()
-        )
-        + "\n",
-        encoding="utf-8",
+    write_prompt_package(
+        out_dir=out_dir,
+        final_prompt=final_prompt,
+        negative_prompt=negative_prompt,
+        negative_selection=explain_negative_selection(spec, selection),
+        reference_interpretation=reference_interpretation,
+        generation_settings=generation_settings,
+        quality_checklist=build_quality_checklist(),
     )
-    write_reference_interpretation(out_dir, spec)
-    write_generation_settings(out_dir, spec)
-    write_quality_checklist(out_dir)
+    if args.score:
+        write_score_files(out_dir, final_prompt, generation_settings, negative_prompt, reference_interpretation)
 
     print(f"Prompt package created: {out_dir}")
-    print(
-        "Generation was not run. Set run_generation: true in the spec and run generate_image2.py explicitly if needed."
-    )
+    print("Generation was not run. Set run_generation: true in the spec and run generate_image2.py explicitly if needed.")
 
 
 if __name__ == "__main__":

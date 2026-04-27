@@ -58,11 +58,7 @@ style_direction:
   detail_density: "high quality but controlled, no clutter"
 
 negative_profile:
-  universal_render_cleanliness: true
-  lighting_highlight_noise: true
-  background_material_stability: true
-  clothing_fragmentation: true
-  anatomy_body: true
+  mode: "auto"
 
 project_style_bible:
   use_wishwalking_style_bible: true
