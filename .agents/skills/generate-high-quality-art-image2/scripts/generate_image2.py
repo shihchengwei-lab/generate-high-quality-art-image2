@@ -59,9 +59,8 @@ def main() -> None:
     settings = load_json(settings_path)
     # If generation is not authorized, stop immediately without requiring the openai package.
     if settings.get("run_generation") is not True:
-        raise SystemExit(
-            "Generation is not authorized. Set run_generation: true in the spec and rebuild the prompt package."
-        )
+        print("Generation is not authorized. Set run_generation: true in the spec and rebuild the prompt package.")
+        return
 
     reference_images = settings.get("reference_images", [])
     if len(reference_images) not in (1, 2):
@@ -95,6 +94,7 @@ def main() -> None:
 
         # Use the image edit workflow when reference images are provided.
         # Note: the current OpenAI Python SDK expects an array of file-like objects under the 'image' parameter.
+        print("Generation is authorized. Calling Image API now.")
         result = client.images.edit(
             model=model,
             image=image_files,

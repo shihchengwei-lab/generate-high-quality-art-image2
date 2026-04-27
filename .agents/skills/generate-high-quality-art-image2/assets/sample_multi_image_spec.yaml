@@ -1,0 +1,70 @@
+asset_set_name: "wishwalking_deity_sequence_001"
+workflow_type: "multi_image_consistency"
+run_generation: false
+
+model:
+  name: "gpt-image-2"
+  quality: "high"
+  size: "1024x1536"
+  output_format: "png"
+
+intended_use: "mobile game deity illustration sequence"
+image_type: "deity_card_sequence"
+aspect_ratio: "2:3"
+
+reference_images:
+  - path: "./refs/ref_identity.png"
+    role: "primary_identity_costume"
+  - path: "./refs/ref_lighting_pose.png"
+    role: "secondary_lighting_mood"
+
+shared_identity:
+  subject: "a benevolent Taiwanese folk deity"
+  fixed_traits:
+    - "same face structure"
+    - "same age impression"
+    - "same hairstyle"
+    - "same core ceremonial robe silhouette"
+    - "same symbolic identity"
+    - "warm compassionate emotional tone"
+  variable_traits_allowed:
+    - "pose"
+    - "camera angle"
+    - "background atmosphere"
+    - "lighting intensity"
+    - "minor prop placement"
+  variable_traits_forbidden:
+    - "changing face identity"
+    - "changing age impression"
+    - "changing hairstyle"
+    - "replacing symbolic costume identity"
+    - "adding random glyphs or fake text"
+
+style_direction:
+  rendering: "polished 2D illustration"
+  mood: "sacred, warm, quiet, emotionally grounded"
+  palette: "warm gold, amber, soft cream, muted temple red accents"
+  detail_density: "high quality but controlled, no clutter"
+
+images:
+  - id: "image_01"
+    title: "Quiet blessing"
+    scene: "soft temple interior with incense glow"
+    framing: "half-body portrait"
+    pose: "calm blessing gesture"
+    lighting: "soft amber sacred light"
+  - id: "image_02"
+    title: "Village dusk protection"
+    scene: "village dusk with distant lantern warmth"
+    framing: "three-quarter body"
+    pose: "protective standing pose"
+    lighting: "warm sunset and temple lantern glow"
+  - id: "image_03"
+    title: "Night mountain vow"
+    scene: "quiet mountain shrine under moonlight"
+    framing: "full-body illustration"
+    pose: "solemn vow gesture"
+    lighting: "cool moonlight balanced with warm sacred aura"
+
+negative_profile:
+  mode: "auto"

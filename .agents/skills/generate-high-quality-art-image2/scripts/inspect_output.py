@@ -12,7 +12,11 @@ structured checklist for human reviewers and helps compile revision instructions
 """
 
 import argparse
+import json
 from pathlib import Path
+
+from lib.prompt_scorer import render_score_markdown, score_prompt_package
+from lib.spec_io import write_json, write_text
 
 
 # Predefined revision snippets for common issues.
@@ -40,6 +44,11 @@ def main() -> None:
         choices=REVISION_SNIPPETS.keys(),
         action="append",
         help="Specific issues to address in a revision prompt.",
+    )
+    parser.add_argument(
+        "--score-prompt",
+        action="store_true",
+        help="Re-run prompt scoring for this job directory.",
     )
     args = parser.parse_args()
 
@@ -95,6 +104,26 @@ def main() -> None:
 
         (job_dir / "revision_prompt.txt").write_text(revision_prompt, encoding="utf-8")
         print(f"Revision prompt created: {job_dir / 'revision_prompt.txt'}")
+
+    if args.score_prompt:
+        required_files = [
+            job_dir / "final_prompt.txt",
+            job_dir / "generation_settings.json",
+            job_dir / "negative_prompt_used.md",
+            job_dir / "reference_interpretation.md",
+        ]
+        for path in required_files:
+            if not path.exists():
+                raise SystemExit(f"Missing required file for scoring: {path}")
+        score = score_prompt_package(
+            final_prompt=(job_dir / "final_prompt.txt").read_text(encoding="utf-8"),
+            generation_settings=json.loads((job_dir / "generation_settings.json").read_text(encoding="utf-8")),
+            negative_prompt=(job_dir / "negative_prompt_used.md").read_text(encoding="utf-8"),
+            reference_interpretation=(job_dir / "reference_interpretation.md").read_text(encoding="utf-8"),
+        )
+        write_json(job_dir / "prompt_score.json", score)
+        write_text(job_dir / "prompt_score.md", render_score_markdown(score))
+        print(f"Prompt score updated: {job_dir / 'prompt_score.md'}")
 
     print(f"Quality checklist updated: {job_dir / 'quality_checklist.md'}")
 
