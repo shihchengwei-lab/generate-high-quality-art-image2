@@ -1,4 +1,4 @@
-# Prompt Structure for High Quality Image 2.0 Art
+# Prompt Structure for High Quality Image 2.0 Art
 
 Use this structure to build the final prompt.
 
@@ -7,49 +7,49 @@ The final prompt should be in English by default.
 ## Template
 
 ```text
-Create a high-quality single-image illustration for INTENDED_USE.
+Create a high-quality single-image illustration for [INTENDED_USE].
 
-REFERENCE USE:
-Use reference image 1 as the primary identity and design reference. Preserve face, hair, age impression, body type, costume silhouette, symbolic details, and main palette.
-Use reference image 2 as the secondary reference for pose, camera angle, composition, lighting, background atmosphere, and rendering mood.
-If the two references conflict, preserve identity and costume from reference image 1, and use reference image 2 only for pose, lighting, composition, and atmosphere.
+[REFERENCE USE]
+Use reference image 1 as the primary identity and design reference. Preserve [FACE / HAIR / AGE IMPRESSION / BODY TYPE / COSTUME SILHOUETTE / SYMBOLIC DETAILS / MAIN PALETTE].
+Use reference image 2 as the secondary reference for [POSE / CAMERA ANGLE / COMPOSITION / LIGHTING / BACKGROUND ATMOSPHERE / RENDERING MOOD].
+If the two references conflict, preserve identity and costume from reference image 1, and use reference image 2 only for pose, lighting, composition, and atmosphere.
 
-SUBJECT:
-Depict the subject description.
-The character should feel like the requested personality, divine role, or emotional state.
-Important visual traits: must-keep traits.
+[SUBJECT]
+Depict [SUBJECT DESCRIPTION].
+The character should feel [PERSONALITY / DIVINE ROLE / EMOTIONAL STATE].
+Important visual traits: [MUST_KEEP].
 
-COSTUME AND PROPS:
-Costume structure: costume structure.
-Symbolic elements: symbolic elements.
-Props: props.
+[COSTUME AND PROPS]
+Costume structure: [COSTUME STRUCTURE].
+Symbolic elements: [SYMBOLIC ELEMENTS].
+Props: [PROPS].
 Keep the costume hierarchy readable and intentional.
 
-COMPOSITION:
-Camera: camera.
-Framing: bust, half body, full body, or wide scene.
-Pose: pose.
-Composition: centered, rule of thirds, symmetrical, or dynamic.
-Background: background.
+[COMPOSITION]
+Camera: [CAMERA].
+Framing: [BUST / HALF BODY / FULL BODY / WIDE SCENE].
+Pose: [POSE].
+Composition: [CENTERED / RULE OF THIRDS / SYMMETRICAL / DYNAMIC].
+Background: [BACKGROUND].
 Do not include text, logos, UI, captions, watermarks, or random symbols unless explicitly requested.
 
-STYLE:
-Style direction: style direction.
+[STYLE]
+Style direction: [STYLE_DIRECTION].
 Rendering: polished 2D illustration, clean forms, coherent material rendering, controlled detail density.
-Palette: palette.
-Lighting: lighting.
-Mood: mood.
+Palette: [PALETTE].
+Lighting: [LIGHTING].
+Mood: [MOOD].
 
-QUALITY CONTROL:
+[QUALITY CONTROL]
 Prioritize identity consistency, clean silhouette, readable costume hierarchy, natural anatomy, stable hands, coherent lighting, smooth gradients, controlled highlights, and clean background separation.
 
-AVOID:
-Selected negative blocks.
+[AVOID]
+[SELECTED_NEGATIVE_BLOCKS]
 
-OUTPUT:
-Aspect ratio: aspect ratio.
-Resolution: size.
-Final image should be suitable for the requested use case.
+[OUTPUT]
+Aspect ratio: [ASPECT_RATIO].
+Resolution: [SIZE].
+Final image should be suitable for [GAME / PROMOTION / CARD / STORY SCENE / CHARACTER PROFILE].
 ```
 
 ## Prompt style rules

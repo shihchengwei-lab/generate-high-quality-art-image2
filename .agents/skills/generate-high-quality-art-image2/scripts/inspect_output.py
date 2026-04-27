@@ -1,10 +1,21 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+"""
+inspect_output.py
+
+This script assists with manual inspection of generated images. It can update or create a quality
+checklist markdown file and generate a targeted revision prompt based on user-specified issues.
+
+It does not attempt to perform any automatic scoring or visual analysis; instead, it provides a
+structured checklist for human reviewers and helps compile revision instructions.
+"""
+
 import argparse
 from pathlib import Path
 
 
+# Predefined revision snippets for common issues.
 REVISION_SNIPPETS = {
     "hands": "Preserve the same composition and identity, but redraw the hands with natural anatomy, readable fingers, correct finger count, and stable wrist alignment.",
     "face_identity": "Preserve the composition and lighting, but restore the face identity, age impression, hairstyle, and emotional tone from reference image 1.",
@@ -18,9 +29,18 @@ REVISION_SNIPPETS = {
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--job-dir", required=True)
-    parser.add_argument("--issue", choices=REVISION_SNIPPETS.keys(), action="append")
+    parser = argparse.ArgumentParser(
+        description=(
+            "Update a quality checklist and optionally generate a revision prompt for a job directory."
+        )
+    )
+    parser.add_argument("--job-dir", required=True, help="Path to the job directory to inspect.")
+    parser.add_argument(
+        "--issue",
+        choices=REVISION_SNIPPETS.keys(),
+        action="append",
+        help="Specific issues to address in a revision prompt.",
+    )
     args = parser.parse_args()
 
     job_dir = Path(args.job_dir)
@@ -29,6 +49,7 @@ def main() -> None:
 
     result_exists = (job_dir / "result.png").exists()
 
+    # Build a simple checklist template. Use a minimal set of items to remind the reviewer what to look for.
     checklist = [
         "# Quality Checklist",
         "",
@@ -59,6 +80,7 @@ def main() -> None:
 
     (job_dir / "quality_checklist.md").write_text("\n".join(checklist), encoding="utf-8")
 
+    # If issues were specified, construct a revision prompt
     if args.issue:
         prompt_path = job_dir / "final_prompt.txt"
         base_prompt = prompt_path.read_text(encoding="utf-8") if prompt_path.exists() else ""

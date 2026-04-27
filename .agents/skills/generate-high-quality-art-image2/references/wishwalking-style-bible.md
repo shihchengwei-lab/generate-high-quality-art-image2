@@ -2,7 +2,7 @@
 
 This file defines the preferred art direction for the game world "願行".
 
-Use this style bible only when the user asks for Wishwalking / 願行 / Taiwanese folk-belief game art, deity cards, divine scenes, shrine atmosphere, blessing moments, or related visual assets.
+Use this style bible only when the user asks for Wishwalking / 願行 / Taiwanese folk‑belief game art, deity cards, divine scenes, shrine atmosphere, blessing moments, or related visual assets.
 
 ## Core mood
 
@@ -16,13 +16,13 @@ The image should feel:
 - spiritual but not horror
 - mythic but not generic fantasy
 - intimate rather than spectacular
-- suitable for a mobile game with a folk-belief atmosphere
+- suitable for a mobile game with a folk‑belief atmosphere
 
 ## Visual language
 
 Preferred elements:
 
-- Taiwanese folk-belief atmosphere
+- Taiwanese folk‑belief atmosphere
 - incense warmth
 - amber and soft gold light
 - quiet blessing moment
@@ -47,7 +47,7 @@ Avoid:
 - excessive digital magic circles
 - overdesigned costume clutter
 - unreadable ornaments
-- cold metallic sci-fi lighting
+- cold metallic sci‑fi lighting
 - overly glossy plastic surfaces
 - chaotic talisman-like symbols unless specifically requested
 
@@ -61,7 +61,7 @@ Do not make the image feel like:
 - a gacha splash screen with chaotic effects
 - a horror deity
 - a cyberpunk spirit
-- a Western high-fantasy god
+- a Western high‑fantasy god
 - a random temple cosplay image
 
 ## Detail hierarchy
@@ -121,5 +121,5 @@ Prioritize:
 - clear gesture
 - clear silhouette
 - separated subject/background values
-- non-chaotic lighting
+- non‑chaotic lighting
 - controlled detail density

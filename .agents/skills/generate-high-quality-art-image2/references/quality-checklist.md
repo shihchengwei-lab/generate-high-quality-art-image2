@@ -1,12 +1,12 @@
 # Quality Checklist
 
-Score each item from 0 to 5.
+Score each item from 0 to 5.
 
 Use this checklist after generating, reviewing, or preparing a revision prompt.
 
 ## Identity
 
-- Face identity preserved from reference image 1
+- Face identity preserved from reference image 1
 - Age impression preserved
 - Hairstyle preserved
 - Core silhouette preserved
@@ -31,7 +31,7 @@ Use this checklist after generating, reviewing, or preparing a revision prompt.
 
 - Costume hierarchy is clear
 - Silhouette is readable
-- Robe / clothing layers are coherent
+- Robe / clothing layers are coherent
 - No fragmented costume panels
 - No random ornaments
 - No excessive ribbons
@@ -77,18 +77,18 @@ Use this checklist after generating, reviewing, or preparing a revision prompt.
 - Readable at mobile size
 - Character role is clear
 - Emotional tone fits the project
-- Image can function as card / portrait / story art
+- Image can function as card / portrait / story art
 - Composition is not too crowded
 - Important gesture is readable
 - Works with UI crop area if intended for card art
 
-## Pass / fail guidance
+## Pass / fail guidance
 
 A generated image is acceptable only if:
 
-- identity score average >= 4
-- anatomy score average >= 4
-- lighting score average >= 4
+- identity score average >= 4
+- anatomy score average >= 4
+- lighting score average >= 4
 - no severe hand/finger failure
 - no severe face identity failure
 - no random text/glyph/code artifacts

@@ -1,30 +1,30 @@
 ---
 name: generate-high-quality-art-image2
-description: Generate production-quality single-image game art, deity illustrations, character cards, story illustrations, key visuals, and promotional artwork using Image 2.0 / gpt-image-2 with one or two reference images. Use when the user asks for polished art generation, reference-image-based generation, character consistency, quality improvement, negative prompts, artifact suppression, clothing cohesion, anatomy correction, or high-quality visual prompt planning. Do not use for sprite sheets, animation frames, tilemaps, transparent-background game assets, UI icon batches, collision data, or asset-manifest integration.
+description: Generate production-quality single-image game art, deity illustrations, character cards, story illustrations, key visuals, and promotional artwork using Image 2.0 / gpt-image-2 with one or two reference images. Use when the user asks for polished art generation, reference‑image‑based generation, character consistency, quality improvement, negative prompts, artifact suppression, clothing cohesion, anatomy correction, or high‑quality visual prompt planning. Do not use for sprite sheets, animation frames, tilemaps, transparent‑background game assets, UI icon batches, collision data, or asset‑manifest integration.
 ---
 
-# Generate High Quality Art with Image 2.0
+# Generate High Quality Art with Image 2.0
 
 ## Purpose
 
-This skill creates production-grade single images using Image 2.0 / gpt-image-2.
+This skill creates production‑grade single images using Image 2.0 / gpt‑image‑2.
 
 It is designed for:
 
-- high-quality character art
+- high‑quality character art
 - deity illustrations
 - game card art
 - story illustrations
 - key visuals
 - promotional artwork
-- polished portrait or half-body illustrations
-- reference-image-based image generation
+- polished portrait or half‑body illustrations
+- reference‑image‑based image generation
 
-This skill is not for sprite sheets, animation frame sheets, tilemaps, transparent-background assets, UI icons, asset slicing, collision data, or Flutter / Flame integration.
+This skill is not for sprite sheets, animation frame sheets, tilemaps, transparent‑background assets, UI icons, asset slicing, collision data, or Flutter / Flame integration.
 
 ## Default behavior
 
-Default mode is prompt-planning only.
+Default mode is prompt‑planning only.
 
 Do not generate an image unless the user explicitly requests image generation or the task spec sets:
 
@@ -65,15 +65,15 @@ If one reference image is provided:
 
 - Treat it as the primary identity and design reference unless the user says otherwise.
 - Preserve the subject's core identity, face structure, age impression, hairstyle, silhouette, major clothing structure, symbolic props, palette, and emotional tone.
-- Do not copy accidental artifacts, compression noise, broken anatomy, random symbols, low-quality texture defects, or background clutter.
+- Do not copy accidental artifacts, compression noise, broken anatomy, random symbols, low‑quality texture defects, or background clutter.
 
 If two reference images are provided:
 
-- Reference image 1 is the primary identity / face / costume / symbolic design reference by default.
-- Reference image 2 is the secondary pose / camera / composition / lighting / mood / background atmosphere reference by default.
-- If the references conflict, preserve identity and costume from reference image 1.
-- Use reference image 2 only for composition, lighting, pose, camera angle, and environment unless the user explicitly says otherwise.
-- Never let reference image 2 overwrite the face, age impression, hairstyle, symbolic identity, or core costume design from reference image 1 unless the user explicitly requests it.
+- Reference image 1 is the primary identity / face / costume / symbolic design reference by default.
+- Reference image 2 is the secondary pose / camera / composition / lighting / mood / background atmosphere reference by default.
+- If the references conflict, preserve identity and costume from reference image 1.
+- Use reference image 2 only for composition, lighting, pose, camera angle, and environment unless the user explicitly says otherwise.
+- Never let reference image 2 overwrite the face, age impression, hairstyle, symbolic identity, or core costume design from reference image 1 unless the user explicitly requests it.
 
 ## Prompt construction
 
@@ -88,7 +88,7 @@ Build the final generation prompt in this order:
 7. Lighting and color palette
 8. Rendering style
 9. Quality direction
-10. Negative / avoidance block
+10. Negative / avoidance block
 11. Output constraints
 
 Use English for the final generation prompt unless the user asks for another language.
@@ -99,15 +99,15 @@ Use negative prompts as targeted avoidance instructions.
 
 Do not dump every negative term into every prompt.
 
-Always include the universal render-cleanliness block.
+Always include the universal render‑cleanliness block.
 
 Include the anatomy block only when a human, deity, character, or creature body is visible.
 
-Include the clothing-fragmentation block when the image contains elaborate clothing, ceremonial robes, armor, layered accessories, ribbons, ornate fabric, or deity costume.
+Include the clothing‑fragmentation block when the image contains elaborate clothing, ceremonial robes, armor, layered accessories, ribbons, ornate fabric, or deity costume.
 
-Include the lighting / highlight block when the image contains glow, divine light, jewelry, metallic surfaces, glass, water, snow, particles, translucent overlays, incense glow, or magical effects.
+Include the lighting / highlight block when the image contains glow, divine light, jewelry, metallic surfaces, glass, water, snow, particles, translucent overlays, incense glow, or magical effects.
 
-Include the background / material block when the image has a visible environment, symbols, fabric, glossy surfaces, large gradients, temple interiors, shrine spaces, or village scenery.
+Include the background / material block when the image has a visible environment, symbols, fabric, glossy surfaces, large gradients, temple interiors, shrine spaces, or village scenery.
 
 Prefer positive corrections before negative terms:
 

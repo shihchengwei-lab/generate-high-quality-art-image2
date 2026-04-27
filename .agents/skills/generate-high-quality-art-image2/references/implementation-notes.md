@@ -4,12 +4,12 @@
 
 The skill has four phases:
 
-1. Analyze
-2. Build Prompt
-3. Generate
-4. Inspect
+1. **Analyze**
+2. **Build Prompt**
+3. **Generate**
+4. **Inspect**
 
-## Phase 1 — Analyze
+## Phase 1 — Analyze
 
 Inputs:
 
@@ -22,8 +22,8 @@ Actions:
 - identify intended use
 - identify image type
 - assign reference image roles
-- identify must-keep traits
-- identify must-avoid traits
+- identify must‑keep traits
+- identify must‑avoid traits
 - select negative prompt modules
 - decide output size and quality
 
@@ -33,7 +33,7 @@ Outputs:
 - assumptions section
 - selected negative modules
 
-## Phase 2 — Build Prompt
+## Phase 2 — Build Prompt
 
 Use:
 
@@ -48,7 +48,7 @@ Outputs:
 - `negative_prompt_used.md`
 - `generation_settings.json`
 
-## Phase 3 — Generate
+## Phase 3 — Generate
 
 Only run generation if:
 
@@ -60,14 +60,14 @@ If `run_generation` is missing or false, do not call the image API.
 
 Use `gpt-image-2`.
 
-If reference images are provided, use an image editing / reference-image workflow.
+If reference images are provided, use an image editing / reference-image workflow.
 
 Outputs:
 
 - `result.png`
 - updated `generation_settings.json`
 
-## Phase 4 — Inspect
+## Phase 4 — Inspect
 
 Review the result if available.
 
@@ -88,7 +88,7 @@ Outputs:
 | key visual landscape | `1536x1024` or `2560x1440` | `high` |
 | square portrait/card | `1024x1024` | `high` |
 
-## Cost-control rule
+## Cost‑control rule
 
 The default sample spec must set:
 
@@ -96,7 +96,7 @@ The default sample spec must set:
 run_generation: false
 ```
 
-Do not run high-quality generations automatically during setup or tests.
+Do not run high‑quality generations automatically during setup or tests.
 
 ## Failure handling
 
@@ -110,11 +110,11 @@ If output quality is poor:
 
 Examples:
 
-- Failure: hands malformed  
-  Revision: "Preserve the same composition, but redraw the hands with natural anatomy, readable fingers, correct finger count, and stable wrist alignment."
+- **Failure:** hands malformed  
+  **Revision:** "Preserve the same composition, but redraw the hands with natural anatomy, readable fingers, correct finger count, and stable wrist alignment."
 
-- Failure: clothing fragmented  
-  Revision: "Preserve the costume concept, but simplify the robe into coherent layers with a clear silhouette and intentional ornament hierarchy."
+- **Failure:** clothing fragmented  
+  **Revision:** "Preserve the costume concept, but simplify the robe into coherent layers with a clear silhouette and intentional ornament hierarchy."
 
-- Failure: noisy glow  
-  Revision: "Preserve the warm divine atmosphere, but reduce glitter noise, edge halos, and scattered highlights; use controlled soft amber glow."
+- **Failure:** noisy glow  
+  **Revision:** "Preserve the warm divine atmosphere, but reduce glitter noise, edge halos, and scattered highlights; use controlled soft amber glow."

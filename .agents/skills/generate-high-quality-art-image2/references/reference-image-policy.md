@@ -7,7 +7,7 @@ This skill supports exactly:
 - 1 reference image
 - 2 reference images
 
-If the user provides more than 2 reference images, ask the user to choose the top 2 or assign the images to a different workflow.
+If the user provides more than 2 reference images, ask the user to choose the top 2 or assign the images to a different workflow.
 
 ## One reference image
 
@@ -33,7 +33,7 @@ Do not preserve:
 - broken anatomy
 - distorted fingers
 - random background symbols
-- low-quality rendering defects
+- low‑quality rendering defects
 - stray text or watermarks
 
 Suggested wording:
@@ -46,7 +46,7 @@ Use the single reference image as the primary identity and design reference. Pre
 
 Default role assignment:
 
-### Reference image 1
+### Reference image 1
 
 Use as:
 
@@ -61,7 +61,7 @@ Use as:
 - main palette
 - silhouette
 
-### Reference image 2
+### Reference image 2
 
 Use as:
 
@@ -75,17 +75,17 @@ Use as:
 
 ## Conflict rule
 
-If reference image 1 and reference image 2 conflict:
+If reference image 1 and reference image 2 conflict:
 
-- reference image 1 wins for identity, face, age impression, hairstyle, symbolic design, and costume
-- reference image 2 wins only for pose, lighting, camera, background atmosphere, and composition
+- reference image 1 wins for identity, face, age impression, hairstyle, symbolic design, and costume
+- reference image 2 wins only for pose, lighting, camera, background atmosphere, and composition
 
 Suggested wording:
 
 ```text
-Use reference image 1 as the primary character and identity reference. Preserve the face structure, hairstyle, age impression, core costume silhouette, symbolic identity, and main palette.
+Use reference image 1 as the primary character and identity reference. Preserve the face structure, hairstyle, age impression, core costume silhouette, symbolic identity, and main palette.
 
-Use reference image 2 only as a secondary reference for pose, camera angle, lighting mood, composition, and environmental atmosphere. Do not overwrite the identity, face, age impression, hairstyle, symbolic identity, or costume design from reference image 1.
+Use reference image 2 only as a secondary reference for pose, camera angle, lighting mood, composition, and environmental atmosphere. Do not overwrite the identity, face, age impression, hairstyle, symbolic identity, or costume design from reference image 1.
 ```
 
 ## Reference interpretation file
@@ -96,5 +96,5 @@ Every run must create `reference_interpretation.md` with:
 - role of each reference
 - visual traits to preserve
 - visual traits to ignore
-- conflict-resolution rule
+- conflict‑resolution rule
 - assumptions

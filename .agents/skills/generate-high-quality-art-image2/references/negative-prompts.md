@@ -8,7 +8,7 @@ Prefer positive quality guidance first, then avoidance terms.
 
 ---
 
-## Module A — Universal render cleanliness
+## Module A — Universal render cleanliness
 
 Use this module in every prompt.
 
@@ -26,9 +26,22 @@ Keep the rendering clean and stable, with controlled texture detail and smooth m
 
 ---
 
-## Module B — Lighting, highlight, glow, and overlay noise
+## Module B — Lighting, highlight, glow, and overlay noise
 
-Use this module when the image contains divine light, glow, incense glow, magical effects, jewelry, metal, glass, water, snow, particles, translucent overlays, or bright rim light.
+Use this module when the image contains:
+
+- divine light
+- glow
+- incense glow
+- magical effects
+- jewelry
+- metal
+- glass
+- water
+- snow
+- particles
+- translucent overlays
+- bright rim light
 
 ### Raw terms
 
@@ -44,9 +57,17 @@ Keep the lighting direction consistent and controlled. Use clean controlled high
 
 ---
 
-## Module C — Background and material stability
+## Module C — Background and material stability
 
-Use this module when the image contains visible background, shrine, temple, village, interior, outdoor scenery, fabric backgrounds, glossy surfaces, large gradients, symbolic background shapes, or large areas of material rendering.
+Use this module when the image contains:
+
+- visible background
+- shrine, temple, village, interior, or outdoor scenery
+- fabric backgrounds
+- glossy surfaces
+- large gradients
+- symbolic background shapes
+- large areas of material rendering
 
 ### Raw terms
 
@@ -62,9 +83,20 @@ Keep the background clean, intentional, and visually coherent. Use smooth gradie
 
 ---
 
-## Module D — Clothing fragmentation and overdesign
+## Module D — Clothing fragmentation and overdesign
 
-Use this module when the image contains deity clothing, ceremonial robes, layered outfit, historical costume, fantasy costume, ornate accessories, armor, ribbons, frills, or complex fabric patterns.
+Use this module when the image contains:
+
+- deity clothing
+- ceremonial robes
+- layered outfit
+- historical costume
+- fantasy costume
+- ornate accessories
+- armor
+- ribbons
+- frills
+- complex fabric patterns
 
 ### Raw terms
 
@@ -80,9 +112,17 @@ Design the costume with a clear hierarchy: readable silhouette, coherent layers,
 
 ---
 
-## Module E — Anatomy and body structure
+## Module E — Anatomy and body structure
 
-Use this module when the image contains a full body character, half-body character, visible hands, visible arms or legs, deity figure, creature body, or dynamic pose.
+Use this module when the image contains:
+
+- full body character
+- half-body character
+- visible hands
+- visible arms or legs
+- deity figure
+- creature body
+- dynamic pose
 
 ### Raw terms
 
@@ -102,16 +142,16 @@ Use natural anatomy, balanced posture, believable limb placement, readable hands
 
 | Image type | Required modules |
 |---|---|
-| character portrait | A + D + E |
-| deity card | A + B + C + D + E |
-| story illustration with people | A + B + C + D + E |
-| environment / scene | A + B + C |
-| prop / object | A + C |
-| magical FX / glow / incense / blessing effect | A + B |
-| costume concept | A + D + E |
-| promotional key visual | A + B + C + D + E |
-| close-up face portrait | A + B + E |
-| no-human background | A + C, plus B if glow is present |
+| character portrait | A + D + E |
+| deity card | A + B + C + D + E |
+| story illustration with people | A + B + C + D + E |
+| environment / scene | A + B + C |
+| prop / object | A + C |
+| magical FX / glow / incense / blessing effect | A + B |
+| costume concept | A + D + E |
+| promotional key visual | A + B + C + D + E |
+| close-up face portrait | A + B + E |
+| no-human background | A + C, plus B if glow is present |
 
 ## Important rule
 

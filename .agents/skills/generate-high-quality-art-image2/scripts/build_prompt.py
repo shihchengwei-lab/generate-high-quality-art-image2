@@ -1,6 +1,29 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+"""
+build_prompt.py
+
+This script reads a YAML specification describing a desired image and produces a prompt package
+without calling any image API. It validates input, selects appropriate negative prompt modules,
+constructs a structured prompt, and writes several output files into a timestamped job directory.
+
+Usage example:
+
+    python .agents/skills/generate-high-quality-art-image2/scripts/build_prompt.py \
+      --spec .agents/skills/generate-high-quality-art-image2/assets/sample_spec.yaml \
+      --out outputs
+
+The resulting job directory will contain:
+  - final_prompt.txt
+  - negative_prompt_used.md
+  - reference_interpretation.md
+  - generation_settings.json
+  - quality_checklist.md
+
+By default the spec should set `run_generation: false` to prevent accidental API calls.
+"""
+
 import argparse
 import json
 from datetime import datetime
@@ -8,21 +31,48 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 try:
-    import yaml
+    import yaml  # type: ignore
 except ImportError as exc:
     raise SystemExit("Missing dependency: pyyaml. Install with `pip install pyyaml`.") from exc
 
 
-NEGATIVE_MODULES = {
-    "universal_render_cleanliness": """Keep the rendering clean and stable, with controlled texture detail and smooth material transitions. Avoid render artifacts, high-frequency artifacts, texture fragmentation, fragmented texture, broken texture, scratch-like lines, scraped paint texture, chipped paint effect, peeling texture, grunge scratches, dirty scratches, noisy line artifacts, random thin white lines, chaotic micro-lines, excessive hairline details, over-sharpened details, over-detailed highlights, and specular noise.""",
-    "lighting_highlight_noise": """Keep the lighting direction consistent and controlled. Use clean controlled highlights, soft sacred glow, coherent shading, and restrained atmospheric particles. Avoid noisy highlights, scattered highlights, broken lighting, inconsistent shading, shading artifacts, harsh edge halos, edge haloing, artificial glow noise, glitter noise, snow noise over the subject, visual clutter, messy translucent overlays, excessive digital glyphs, unreadable floating text, and random code fragments.""",
-    "background_material_stability": """Keep the background clean, intentional, and visually coherent. Use smooth gradients, natural material transitions, readable depth, and controlled surface detail. Avoid noisy background symbols, fractured fabric texture, wrinkled plastic texture, dirty glossy surface, muddy white tones, patchy lighting, low-frequency inconsistency, lack of smooth gradients, unnatural material transition, over-constrained details, and over-designed composition.""",
-    "clothing_fragmentation": """Design the costume with a clear hierarchy: readable silhouette, coherent layers, intentional ornaments, controlled pattern density, and clean fabric structure. Avoid overly detailed clothing, excessive decoration, fragmented costume, too many accessories, cluttered outfit, complex patterns, messy design, overdesigned clothing, random ornaments, chaotic details, noisy texture, excessive ribbons, and excessive frills.""",
-    "anatomy_body": """Use natural anatomy, balanced posture, believable limb placement, readable hands, correct finger count, stable shoulders and wrists, coherent body proportions, and stable perspective. Avoid bad anatomy, deformed body, broken limbs, twisted joints, unnatural pose, impossible pose, dislocated arms, extra arms, extra legs, missing limbs, malformed hands, fused fingers, extra fingers, wrong proportions, distorted torso, bent spine, unnatural balance, floating limbs, broken perspective, and asymmetrical body errors.""",
+NEGATIVE_MODULES: Dict[str, str] = {
+    "universal_render_cleanliness": (
+        "Keep the rendering clean and stable, with controlled texture detail and smooth material transitions. "
+        "Avoid render artifacts, high-frequency artifacts, texture fragmentation, fragmented texture, broken texture, "
+        "scratch-like lines, scraped paint texture, chipped paint effect, peeling texture, grunge scratches, dirty scratches, "
+        "noisy line artifacts, random thin white lines, chaotic micro-lines, excessive hairline details, over-sharpened details, "
+        "over-detailed highlights, and specular noise."
+    ),
+    "lighting_highlight_noise": (
+        "Keep the lighting direction consistent and controlled. Use clean controlled highlights, soft sacred glow, coherent shading, "
+        "and restrained atmospheric particles. Avoid noisy highlights, scattered highlights, broken lighting, inconsistent shading, "
+        "shading artifacts, harsh edge halos, edge haloing, artificial glow noise, glitter noise, snow noise over the subject, "
+        "visual clutter, messy translucent overlays, excessive digital glyphs, unreadable floating text, and random code fragments."
+    ),
+    "background_material_stability": (
+        "Keep the background clean, intentional, and visually coherent. Use smooth gradients, natural material transitions, readable depth, "
+        "and controlled surface detail. Avoid noisy background symbols, fractured fabric texture, wrinkled plastic texture, dirty glossy surface, "
+        "muddy white tones, patchy lighting, low-frequency inconsistency, lack of smooth gradients, unnatural material transition, over-constrained details, "
+        "and over-designed composition."
+    ),
+    "clothing_fragmentation": (
+        "Design the costume with a clear hierarchy: readable silhouette, coherent layers, intentional ornaments, controlled pattern density, "
+        "and clean fabric structure. Avoid overly detailed clothing, excessive decoration, fragmented costume, too many accessories, "
+        "cluttered outfit, complex patterns, messy design, overdesigned clothing, random ornaments, chaotic details, noisy texture, excessive ribbons, "
+        "and excessive frills."
+    ),
+    "anatomy_body": (
+        "Use natural anatomy, balanced posture, believable limb placement, readable hands, correct finger count, stable shoulders and wrists, "
+        "coherent body proportions, and stable perspective. Avoid bad anatomy, deformed body, broken limbs, twisted joints, unnatural pose, "
+        "impossible pose, dislocated arms, extra arms, extra legs, missing limbs, malformed hands, fused fingers, extra fingers, wrong proportions, "
+        "distorted torso, bent spine, unnatural balance, floating limbs, broken perspective, and asymmetrical body errors."
+    ),
 }
 
 
 def load_spec(path: Path) -> Dict[str, Any]:
+    """Load a YAML specification file and return it as a dictionary."""
     with path.open("r", encoding="utf-8") as f:
         data = yaml.safe_load(f)
     if not isinstance(data, dict):
@@ -31,6 +81,7 @@ def load_spec(path: Path) -> Dict[str, Any]:
 
 
 def validate_spec(spec: Dict[str, Any]) -> None:
+    """Validate required fields and reference image count."""
     refs = spec.get("reference_images", [])
     if not isinstance(refs, list):
         raise ValueError("reference_images must be a list.")
@@ -46,10 +97,12 @@ def validate_spec(spec: Dict[str, Any]) -> None:
 
 
 def timestamp() -> str:
+    """Return a timestamp string for directory naming."""
     return datetime.now().strftime("%Y%m%d-%H%M%S")
 
 
 def make_output_dir(base: Path, asset_name: str) -> Path:
+    """Create and return a safe output directory path based on asset_name and current time."""
     safe_name = "".join(c if c.isalnum() or c in ("-", "_") else "_" for c in asset_name)
     out_dir = base / safe_name / timestamp()
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -57,9 +110,11 @@ def make_output_dir(base: Path, asset_name: str) -> Path:
 
 
 def selected_negative_modules(spec: Dict[str, Any]) -> Dict[str, str]:
+    """Select negative prompt modules based on the spec's negative_profile."""
     profile = spec.get("negative_profile") or {}
     selected: Dict[str, str] = {}
 
+    # Always include universal cleanliness.
     selected["universal_render_cleanliness"] = NEGATIVE_MODULES["universal_render_cleanliness"]
 
     for key in [
@@ -75,6 +130,7 @@ def selected_negative_modules(spec: Dict[str, Any]) -> Dict[str, str]:
 
 
 def build_reference_text(spec: Dict[str, Any]) -> str:
+    """Build textual description of how to use reference images."""
     refs = spec.get("reference_images", [])
     if len(refs) == 1:
         return (
@@ -94,10 +150,11 @@ def build_reference_text(spec: Dict[str, Any]) -> str:
 
 
 def build_prompt(spec: Dict[str, Any], negative_blocks: Dict[str, str]) -> str:
-    subject = spec.get("subject", {})
-    composition = spec.get("composition", {})
-    style = spec.get("style_direction", {})
-    model = spec.get("model", {})
+    """Construct the final structured prompt from the spec and selected negative blocks."""
+    subject = spec.get("subject", {}) or {}
+    composition = spec.get("composition", {}) or {}
+    style = spec.get("style_direction", {}) or {}
+    model = spec.get("model", {}) or {}
 
     subject_desc = subject.get("description", spec.get("subject", "the subject"))
     personality = ", ".join(subject.get("personality", [])) if isinstance(subject, dict) else ""
@@ -152,7 +209,9 @@ def build_prompt(spec: Dict[str, Any], negative_blocks: Dict[str, str]) -> str:
         "[AVOID]",
     ])
 
-    prompt_parts.extend(negative_blocks.values())
+    # Append negative modules in arbitrary order but sorted by key for determinism
+    for k, v in negative_blocks.items():
+        prompt_parts.append(v)
 
     prompt_parts.extend([
         "",
@@ -165,6 +224,7 @@ def build_prompt(spec: Dict[str, Any], negative_blocks: Dict[str, str]) -> str:
 
 
 def write_reference_interpretation(out_dir: Path, spec: Dict[str, Any]) -> None:
+    """Write the reference interpretation file based on reference count."""
     refs = spec.get("reference_images", [])
     lines = [
         "# Reference Interpretation",
@@ -210,6 +270,7 @@ def write_reference_interpretation(out_dir: Path, spec: Dict[str, Any]) -> None:
 
 
 def write_quality_checklist(out_dir: Path) -> None:
+    """Write a simplified quality checklist template."""
     checklist = """# Quality Checklist
 
 Score each item from 0 to 5.
@@ -267,7 +328,8 @@ Score each item from 0 to 5.
 
 
 def write_generation_settings(out_dir: Path, spec: Dict[str, Any]) -> None:
-    model = spec.get("model", {})
+    """Write the generation settings file."""
+    model = spec.get("model", {}) or {}
     settings = {
         "model": model.get("name", "gpt-image-2"),
         "quality": model.get("quality", "high"),
@@ -285,7 +347,7 @@ def write_generation_settings(out_dir: Path, spec: Dict[str, Any]) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description="Build a prompt package for high-quality Image 2.0 art.")
     parser.add_argument("--spec", required=True, help="Path to YAML spec.")
     parser.add_argument("--out", default="outputs", help="Output base directory.")
     args = parser.parse_args()
@@ -310,7 +372,9 @@ def main() -> None:
     write_quality_checklist(out_dir)
 
     print(f"Prompt package created: {out_dir}")
-    print("Generation was not run. Set run_generation: true and run generate_image2.py explicitly if needed.")
+    print(
+        "Generation was not run. Set run_generation: true in the spec and run generate_image2.py explicitly if needed."
+    )
 
 
 if __name__ == "__main__":
