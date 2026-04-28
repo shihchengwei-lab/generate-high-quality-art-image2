@@ -1,21 +1,16 @@
 # generate-high-quality-art-image2
 
-Agent skill for prompt-planned high-quality art generation with Image 2.0 / `gpt-image-2`.
+Agent skill for reference-driven direct generation of high-quality single-image art with Image 2.0 / `gpt-image-2`.
 
-This repository contains a reusable `.agents` skill that plans, builds, scores, inspects, and safely runs high-quality art generation workflows. It supports single-image prompt packages and multi-image consistency prompt packages.
+This repository contains a reusable `.agents` skill for polished character art, deity illustrations, mobile game card art, story illustrations, key visuals, and promotional artwork using one or two reference images.
 
-The skill is designed for:
+The current workflow is designed for:
 
-- polished character art
-- deity illustrations
-- mobile game card art
-- story illustrations
-- key visuals
-- promotional artwork
-- reference-image-based generation with 1 or 2 reference images
-- character consistency planning
-- automatic negative prompt module selection
-- targeted revision prompts
+- Image A as the identity sheet source
+- Image B as the pose / composition source
+- user text as the scene, lighting, atmosphere, time, effects, and story-moment authority
+- direct image generation by default
+- debug-only prompt export when prompt inspection is needed
 
 It is not designed for sprite sheets, animation frames, tilemaps, transparent-background game assets, UI icon batches, collision data, asset slicing, or Flutter / Flame integration.
 
@@ -25,128 +20,172 @@ It is not designed for sprite sheets, animation frames, tilemaps, transparent-ba
 .agents/skills/generate-high-quality-art-image2/
 ```
 
-## Safety
+## Core workflow
 
-The workflow is prompt-only by default. No Image API call is made by `build_prompt.py`, `score_prompt.py`, or `build_multi_image_prompts.py`.
+```text
+Image A provides identity
+-> Image B provides pose / composition
+-> User text provides scene authority
+-> hidden prompt is assembled internally
+-> direct generation runs by default
+-> debug mode exports prompt artifacts only when requested
+```
 
-Image generation is blocked unless the input spec explicitly sets:
+## Reference role separation
+
+When two reference images are supplied:
+
+### Image A = identity sheet
+
+Use only:
+
+- face identity
+- facial feature proportions
+- hairstyle and hair color
+- body proportion
+- age impression
+- base costume design
+- character temperament
+
+Ignore:
+
+- model sheet layout
+- turnaround sheet layout
+- front / side / back presentation
+- labels
+- text
+- panel layout
+- sheet formatting
+
+Image A must never make the output become a character sheet. The output must remain one finished illustration.
+
+### Image B = pose / composition
+
+Use only:
+
+- pose
+- camera angle
+- framing
+- body gesture
+- composition rhythm
+
+Ignore:
+
+- background
+- scene
+- lighting
+- color palette
+- effects
+- props
+- costume details
+- alternate identity
+
+Image B must not take over the environment. User text always wins for scene, lighting, atmosphere, time, effects, and story moment.
+
+## Direct mode
+
+Direct mode is the default.
 
 ```yaml
+execution_mode: "direct"
+debug_export_prompt: false
 run_generation: true
 ```
 
-The sample specs set `run_generation: false`.
-
-## Prompt scoring
-
-Single-image prompt packages are scored automatically by default. The score is deterministic and rule-based; it does not call an LLM or external API.
-
-Output files:
-
-- `prompt_score.json`
-- `prompt_score.md`
-
-To re-run scoring:
+Run:
 
 ```bash
-python .agents/skills/generate-high-quality-art-image2/scripts/score_prompt.py \
-  --job-dir outputs/<asset_name>/<YYYYMMDD-HHMMSS>
-```
-
-To skip scoring during a single-image build:
-
-```bash
-python .agents/skills/generate-high-quality-art-image2/scripts/build_prompt.py \
-  --spec .agents/skills/generate-high-quality-art-image2/assets/sample_spec.yaml \
-  --out outputs \
-  --no-score
-```
-
-## Auto negative-module selection
-
-The default `negative_profile` mode is `auto`. The build script selects relevant modules and writes a readable explanation:
-
-- `negative_prompt_used.md`
-- `negative_module_selection.md`
-
-Manual mode and legacy module booleans remain supported.
-
-## Single-image test command
-
-```bash
-python .agents/skills/generate-high-quality-art-image2/scripts/build_prompt.py \
+python .agents/skills/generate-high-quality-art-image2/scripts/generate_direct.py \
   --spec .agents/skills/generate-high-quality-art-image2/assets/sample_spec.yaml \
   --out outputs
 ```
 
-Expected output:
+Direct mode writes:
+
+- `generation_settings.json`
+- `direct_generation_summary.md`
+- `result.png` when the Image API is actually called
+- `generation_result.json` when generation succeeds
+
+Direct mode does not write `final_prompt.txt` unless debug export is enabled.
+
+For local validation without calling the Image API:
+
+```bash
+python .agents/skills/generate-high-quality-art-image2/scripts/generate_direct.py \
+  --spec .agents/skills/generate-high-quality-art-image2/assets/sample_spec.yaml \
+  --out outputs \
+  --dry-run
+```
+
+## Debug mode
+
+Debug mode preserves the same direct-generation path but exports the internal prompt package for inspection.
+
+```yaml
+execution_mode: "debug"
+debug_export_prompt: true
+```
+
+Run:
+
+```bash
+python .agents/skills/generate-high-quality-art-image2/scripts/generate_direct.py \
+  --spec .agents/skills/generate-high-quality-art-image2/assets/sample_debug_spec.yaml \
+  --out outputs \
+  --dry-run
+```
+
+Debug mode additionally writes:
 
 - `final_prompt.txt`
+- `reference_interpretation.md`
 - `negative_prompt_used.md`
 - `negative_module_selection.md`
-- `reference_interpretation.md`
-- `generation_settings.json`
 - `quality_checklist.md`
 - `prompt_score.json`
 - `prompt_score.md`
 
-No image should be generated in this test.
+## Legacy prompt-package command
 
-## Multi-image consistency workflow
-
-The multi-image workflow plans multiple related images of the same character or deity. It separates fixed identity traits from per-image scene, pose, framing, and lighting variation.
+`build_prompt.py` is retained for debug and review workflows. It now uses the same reference-role separation rules as direct mode.
 
 ```bash
-python .agents/skills/generate-high-quality-art-image2/scripts/build_multi_image_prompts.py \
-  --spec .agents/skills/generate-high-quality-art-image2/assets/sample_multi_image_spec.yaml \
+python .agents/skills/generate-high-quality-art-image2/scripts/build_prompt.py \
+  --spec .agents/skills/generate-high-quality-art-image2/assets/sample_spec.yaml \
   --out outputs
 ```
 
-Expected output:
+## Common failure modes now guarded
 
-- `consistency_guide.md`
-- `variation_matrix.md`
-- `generation_settings.json`
-- `negative_module_selection.md`
-- `shared_negative_prompt_used.md`
-- `image_01_prompt.txt`
-- `image_02_prompt.txt`
-- `image_03_prompt.txt`
-- `image_01_prompt_score.json`
-- `image_01_prompt_score.md`
-- `image_02_prompt_score.json`
-- `image_02_prompt_score.md`
-- `image_03_prompt_score.json`
-- `image_03_prompt_score.md`
-- `multi_image_summary.md`
+### Character sheet takeover
 
-No image should be generated in this test.
+Input:
 
-## Optional generation step
+- Image A is a three-view model sheet.
+- Image B is a dynamic pose reference.
+- User text asks for a moonlit mountain scene.
 
-Only after reviewing the prompt package and explicitly setting `run_generation: true` in the spec:
+Expected behavior:
 
-```bash
-python .agents/skills/generate-high-quality-art-image2/scripts/generate_image2.py \
-  --job-dir outputs/<asset_name>/<YYYYMMDD-HHMMSS>
-```
+- one finished illustration only
+- no three-view layout
+- no labels
+- no sheet grid
+- no panel layout
 
-## Inspect and revision prompt
+### Image B background takeover
 
-```bash
-python .agents/skills/generate-high-quality-art-image2/scripts/inspect_output.py \
-  --job-dir outputs/<asset_name>/<YYYYMMDD-HHMMSS> \
-  --issue hands \
-  --issue noisy_glow
-```
+Input:
 
-To also re-run prompt scoring during inspection:
+- Image B has strong temple lighting or a bright background.
+- User text asks for a night mountain shrine.
 
-```bash
-python .agents/skills/generate-high-quality-art-image2/scripts/inspect_output.py \
-  --job-dir outputs/<asset_name>/<YYYYMMDD-HHMMSS> \
-  --score-prompt
-```
+Expected behavior:
+
+- use Image B pose only
+- ignore Image B lighting and background
+- render the user-specified night mountain shrine
 
 ## Dependencies
 
@@ -154,18 +193,4 @@ python .agents/skills/generate-high-quality-art-image2/scripts/inspect_output.py
 pip install -r requirements.txt
 ```
 
-Image generation additionally requires a configured OpenAI SDK environment and API credentials.
-
-## Core workflow
-
-```text
-reference image role assignment
--> structured prompt
--> automatic negative control
--> prompt scoring
--> prompt-only review
--> optional explicit generation
--> quality inspection
--> targeted revision
--> multi-image consistency when needed
-```
+Real image generation requires a configured OpenAI SDK environment and API credentials.
