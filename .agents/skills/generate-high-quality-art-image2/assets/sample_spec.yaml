@@ -1,7 +1,10 @@
-asset_name: "wishwalking_deity_card_001"
+asset_name: "example_deity_card"
+workflow_type: "direct_reference_generation"
+execution_mode: "direct"
+debug_export_prompt: false
 intended_use: "mobile game deity card illustration"
 image_type: "deity_card"
-run_generation: false
+run_generation: true
 
 model:
   name: "gpt-image-2"
@@ -10,62 +13,86 @@ model:
   output_format: "png"
 
 reference_images:
-  - path: "./refs/ref_identity.png"
-    role: "primary_identity_costume"
-    preserve:
-      - "face structure"
-      - "age impression"
+  - path: "./refs/identity_sheet.png"
+    role: "identity_sheet"
+    use_only:
+      - "face identity"
       - "hairstyle"
-      - "core costume silhouette"
-      - "symbolic identity"
-      - "main color palette"
-  - path: "./refs/ref_lighting_pose.png"
-    role: "secondary_pose_lighting_composition"
-    preserve:
-      - "pose direction"
+      - "body proportion"
+      - "age impression"
+      - "base costume design"
+      - "character temperament"
+    ignore:
+      - "multi-view layout"
+      - "front/side/back presentation"
+      - "labels"
+      - "sheet formatting"
+      - "text"
+      - "panel layout"
+  - path: "./refs/pose_reference.png"
+    role: "pose_composition"
+    use_only:
+      - "pose"
       - "camera angle"
-      - "lighting mood"
-      - "composition"
-      - "environmental atmosphere"
+      - "framing"
+      - "body gesture"
+      - "composition rhythm"
+    ignore:
+      - "background"
+      - "lighting"
+      - "color palette"
+      - "scene"
+      - "props"
+      - "effects"
+      - "costume details"
+
+reference_priority:
+  identity_source: "image_1"
+  pose_source: "image_2"
+  scene_source: "user_text"
+  lighting_source: "user_text"
+  atmosphere_source: "user_text"
 
 subject:
-  description: "a benevolent Taiwanese folk deity appearing during a quiet blessing moment"
+  description: "same character as image 1, preserved as a youthful sacred healer"
   personality:
+    - "gentle"
     - "sacred"
-    - "warm"
-    - "compassionate"
     - "emotionally grounded"
   must_keep:
-    - "gentle divine expression"
-    - "warm gold and amber palette"
-    - "clear ceremonial robe silhouette"
-    - "human-readable hands"
-    - "controlled sacred glow"
-    - "no random text or floating glyphs"
+    - "same face identity as image 1"
+    - "same age impression as image 1"
+    - "same body proportion as image 1"
+    - "same base costume identity as image 1"
 
 composition:
-  framing: "half-body portrait"
-  camera: "slightly low angle"
-  pose: "calm blessing gesture"
-  layout: "centered but not stiff"
-  background: "soft temple atmosphere with abstract incense glow, not overly literal"
+  framing: "full-body upright card illustration"
+  camera: "three-quarter front view"
+  pose: "use image 2 pose and body gesture only"
+  layout: "centered single-character composition"
   aspect_ratio: "2:3"
 
+scene_direction:
+  description: "moonlit Lushan summit at night, sacred quiet atmosphere"
+  lighting: "cool moonlight mixed with soft sacred silver glow"
+  environment: "mountain shrine summit under night sky"
+  atmosphere: "solemn, protective, emotionally grounded"
+  effects: "subtle silver motes, restrained sacred aura"
+  story_moment: "a calm protective deity moment"
+
 style_direction:
-  rendering: "polished 2D illustration"
-  mood: "sacred, warm, quiet, emotionally grounded"
-  palette: "warm gold, amber, soft cream, muted temple red accents"
+  rendering: "polished 2D anime game card illustration"
+  mood: "solemn, sacred, protective"
+  palette: "cool moonlight, soft silver glow, restrained gold accents"
   detail_density: "high quality but controlled, no clutter"
+
+constraints:
+  single_finished_illustration_only: true
+  forbid_character_sheet_output: true
+  forbid_multi_panel_layout: true
+  forbid_reference_background_takeover: true
+  preserve_identity_from_image_1: true
+  use_pose_from_image_2_only: true
 
 negative_profile:
   mode: "auto"
-
-project_style_bible:
-  use_wishwalking_style_bible: true
-
-outputs:
-  save_prompt: true
-  save_negative_prompt: true
-  save_reference_interpretation: true
-  save_generation_settings: true
-  save_quality_checklist: true
