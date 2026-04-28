@@ -1,0 +1,98 @@
+asset_name: "example_deity_card_debug"
+workflow_type: "direct_reference_generation"
+execution_mode: "debug"
+debug_export_prompt: true
+intended_use: "mobile game deity card illustration"
+image_type: "deity_card"
+run_generation: true
+
+model:
+  name: "gpt-image-2"
+  quality: "high"
+  size: "1024x1536"
+  output_format: "png"
+
+reference_images:
+  - path: "./refs/identity_sheet.png"
+    role: "identity_sheet"
+    use_only:
+      - "face identity"
+      - "hairstyle"
+      - "body proportion"
+      - "age impression"
+      - "base costume design"
+      - "character temperament"
+    ignore:
+      - "multi-view layout"
+      - "front/side/back presentation"
+      - "labels"
+      - "sheet formatting"
+      - "text"
+      - "panel layout"
+  - path: "./refs/pose_reference.png"
+    role: "pose_composition"
+    use_only:
+      - "pose"
+      - "camera angle"
+      - "framing"
+      - "body gesture"
+      - "composition rhythm"
+    ignore:
+      - "background"
+      - "lighting"
+      - "color palette"
+      - "scene"
+      - "props"
+      - "effects"
+      - "costume details"
+
+reference_priority:
+  identity_source: "image_1"
+  pose_source: "image_2"
+  scene_source: "user_text"
+  lighting_source: "user_text"
+  atmosphere_source: "user_text"
+
+subject:
+  description: "same character as image 1, preserved as a youthful sacred healer"
+  personality:
+    - "gentle"
+    - "sacred"
+    - "emotionally grounded"
+  must_keep:
+    - "same face identity as image 1"
+    - "same age impression as image 1"
+    - "same body proportion as image 1"
+    - "same base costume identity as image 1"
+
+composition:
+  framing: "full-body upright card illustration"
+  camera: "three-quarter front view"
+  pose: "use image 2 pose and body gesture only"
+  layout: "centered single-character composition"
+  aspect_ratio: "2:3"
+
+scene_direction:
+  description: "moonlit Lushan summit at night, sacred quiet atmosphere"
+  lighting: "cool moonlight mixed with soft sacred silver glow"
+  environment: "mountain shrine summit under night sky"
+  atmosphere: "solemn, protective, emotionally grounded"
+  effects: "subtle silver motes, restrained sacred aura"
+  story_moment: "a calm protective deity moment"
+
+style_direction:
+  rendering: "polished 2D anime game card illustration"
+  mood: "solemn, sacred, protective"
+  palette: "cool moonlight, soft silver glow, restrained gold accents"
+  detail_density: "high quality but controlled, no clutter"
+
+constraints:
+  single_finished_illustration_only: true
+  forbid_character_sheet_output: true
+  forbid_multi_panel_layout: true
+  forbid_reference_background_takeover: true
+  preserve_identity_from_image_1: true
+  use_pose_from_image_2_only: true
+
+negative_profile:
+  mode: "auto"
