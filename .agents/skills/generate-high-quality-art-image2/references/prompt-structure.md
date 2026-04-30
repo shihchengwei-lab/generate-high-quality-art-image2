@@ -1,59 +1,135 @@
-# Prompt Structure for High Quality Image 2.0 Art
+# Prompt Structure for High Quality Image 2.0 Character Art
 
-Use this structure to build the final prompt.
+Use this structure to build final prompts for character illustration, character setting art, and narrative scene images. The final prompt should be in English by default.
 
-The final prompt should be in English by default.
+Do not add UI, infographic, commercial poster, brand identity, logo, or product advertising templates to this skill unless the project scope changes.
 
-## Template
+## Current Schema Audit
+
+The repo already had partial coverage:
+
+- `reference_lock`: partially covered by `reference_priority` and reference-image role rules.
+- `immutable_identity`: partially covered by `subject.must_keep`.
+- `allowed_changes`: present in the multi-image workflow, but not explicit in direct single-image prompts.
+- `composition`: present as `composition`.
+- `pose`: present as `composition.pose`.
+- `attire`: not explicit before this update.
+- `scene`: present as `scene_direction.description` or `scene_direction.environment`.
+- `lighting`: present as `scene_direction.lighting`.
+- `negative_prompt`: generated from selected negative modules; custom avoid lists were not explicit.
+
+Minimal change: keep the old fields working, but add optional direct-prompt fields named `reference_lock`, `immutable_identity`, `allowed_changes`, `attire`, and `negative_prompt`. The prompt builder should place identity and allowed-change rules before composition, pose, attire, scene, lighting, and negative modules.
+
+## Supported Template Families
+
+Use only these families for now:
+
+- `character_illustration`: one finished role, deity, portrait, card, or promotional character illustration.
+- `character_setting_art`: one single-view character concept or setting image with clear identity, attire, and props. Do not output turnaround sheets, model-sheet grids, labels, or multi-panel layouts unless a future scope explicitly allows them.
+- `narrative_scene`: one scene image centered on an event, action, or story moment involving the character.
+
+Use `same_character_variation` when the user asks to keep the same person and change only clothes, scene, or pose.
+
+## Same-Character Variation Template
 
 ```text
-Create a high-quality single-image illustration for [INTENDED_USE].
+Create one high-quality single finished illustration for [INTENDED_USE].
+Workflow type: [WORKFLOW_TYPE].
+Prompt template: same_character_variation.
 
-[REFERENCE USE]
-Use reference image 1 as the primary identity and design reference. Preserve [FACE / HAIR / AGE IMPRESSION / BODY TYPE / COSTUME SILHOUETTE / SYMBOLIC DETAILS / MAIN PALETTE].
-Use reference image 2 as the secondary reference for [POSE / CAMERA ANGLE / COMPOSITION / LIGHTING / BACKGROUND ATMOSPHERE / RENDERING MOOD].
-If the two references conflict, preserve identity and costume from reference image 1, and use reference image 2 only for pose, lighting, composition, and atmosphere.
+[REFERENCE AUTHORITY]
+Image A = identity source only.
+Image B = pose / composition source only when present.
+User text = highest authority for scene, lighting, atmosphere, effects, and story moment.
+
+[CHARACTER CONSISTENCY LOCK]
+reference_lock: preserve Image A identity; do not let Image B, scene text, lighting, or outfit changes rewrite identity.
+immutable_identity: [FACE IDENTITY / FACIAL PROPORTIONS / AGE IMPRESSION / HAIRSTYLE / BODY PROPORTION / CHARACTER TEMPERAMENT / SYMBOLIC IDENTITY].
+allowed_changes: [ATTIRE REQUESTED BY USER / SCENE REQUESTED BY USER / POSE OR CAMERA FROM IMAGE B OR USER TEXT].
+same_character_variation rule: keep the same person first; change only attire, scene, and pose as requested.
 
 [SUBJECT]
-Depict [SUBJECT DESCRIPTION].
-The character should feel [PERSONALITY / DIVINE ROLE / EMOTIONAL STATE].
-Important visual traits: [MUST_KEEP].
+Description: [SUBJECT DESCRIPTION].
+Personality: [PERSONALITY / ROLE / EMOTIONAL STATE].
+Must keep: [MUST_KEEP TRAITS].
 
-[COSTUME AND PROPS]
-Costume structure: [COSTUME STRUCTURE].
-Symbolic elements: [SYMBOLIC ELEMENTS].
+[ATTIRE]
+Requested outfit change: [OUTFIT OR COSTUME CHANGE].
+Footwear or barefoot rule: [SHOES / BOOTS / SANDALS / BAREFOOT / KEEP FROM REFERENCE].
+Materials: [FABRIC / ARMOR / ACCESSORIES].
 Props: [PROPS].
-Keep the costume hierarchy readable and intentional.
 
-[COMPOSITION]
+[COMPOSITION AND POSE]
 Camera: [CAMERA].
-Framing: [BUST / HALF BODY / FULL BODY / WIDE SCENE].
-Pose: [POSE].
-Composition: [CENTERED / RULE OF THIRDS / SYMMETRICAL / DYNAMIC].
-Background: [BACKGROUND].
-Do not include text, logos, UI, captions, watermarks, or random symbols unless explicitly requested.
+Framing: [BUST / HALF-BODY / FULL-BODY / WIDE SCENE].
+Pose: [POSE / BODY GESTURE / ACTION].
+Layout: [CENTERED / RULE OF THIRDS / SYMMETRICAL / DYNAMIC].
+Aspect ratio: [ASPECT_RATIO].
+
+[SCENE AND LIGHTING]
+Scene: [ENVIRONMENT].
+Time: [TIME].
+Atmosphere: [MOOD].
+Story moment: [EVENT OR ACTION].
+Lighting: [ONE COHERENT LIGHTING PLAN].
 
 [STYLE]
-Style direction: [STYLE_DIRECTION].
 Rendering: polished 2D illustration, clean forms, coherent material rendering, controlled detail density.
 Palette: [PALETTE].
-Lighting: [LIGHTING].
 Mood: [MOOD].
 
-[QUALITY CONTROL]
-Prioritize identity consistency, clean silhouette, readable costume hierarchy, natural anatomy, stable hands, coherent lighting, smooth gradients, controlled highlights, and clean background separation.
+[QUALITY CHECKS]
+Hands and fingers: readable hands, correct finger count, no fused or extra fingers.
+Bare feet / footwear: follow the prompt exactly; do not switch barefoot to shoes or shoes to barefoot unless requested.
+Lighting conflict: keep one coherent light direction and avoid mixing incompatible light sources.
+Scene conflict: use the user-selected scene only; do not import background, props, palette, or setting from a pose reference.
 
-[AVOID]
-[SELECTED_NEGATIVE_BLOCKS]
+[NEGATIVE PROMPT]
+[CUSTOM AVOID LIST]
+[SELECTED NEGATIVE MODULES]
 
 [OUTPUT]
-Aspect ratio: [ASPECT_RATIO].
+One completed illustration only.
+No UI, labels, captions, logos, watermarks, model sheet, turnaround sheet, or multi-panel layout.
 Resolution: [SIZE].
-Final image should be suitable for [GAME / PROMOTION / CARD / STORY SCENE / CHARACTER PROFILE].
 ```
 
-## Prompt style rules
+## Narrative Scene Template
 
+```text
+Create one narrative scene image for [INTENDED_USE].
+
+Character lock comes first:
+- immutable_identity: [TRAITS THAT MUST NOT CHANGE].
+- allowed_changes: pose, camera, scene, lighting, and story action only.
+
+Story event:
+- action: [WHAT IS HAPPENING NOW].
+- character role: [WHAT THE CHARACTER IS DOING OR DECIDING].
+- conflict or emotional turn: [TENSION / REVEAL / BLESSING / DANGER].
+
+Scene:
+- environment: [PLACE].
+- time: [TIME].
+- atmosphere: [MOOD].
+- lighting: [COHERENT LIGHT SOURCE].
+
+Composition:
+- camera: [ANGLE].
+- framing: [WIDE / MEDIUM / CLOSE].
+- pose: [ACTION-DRIVEN POSE].
+
+Quality checks:
+- identity not changed by scene lighting
+- hands/fingers stable if visible
+- barefoot/footwear matches instruction
+- no scene-source conflict from references
+```
+
+## Prompt Style Rules
+
+- State the output type first.
+- Put identity locks and allowed changes before pose, attire, scene, and lighting.
 - Be explicit about what each reference image controls.
 - State which reference wins if references conflict.
 - Use positive quality instructions before negative instructions.
@@ -64,11 +140,12 @@ Final image should be suitable for [GAME / PROMOTION / CARD / STORY SCENE
 - For deity art, specify controlled sacred light rather than generic fantasy glow.
 - For folk-belief game art, avoid fake text, random glyphs, and generic fantasy symbols.
 
-## Output format
+## Output Format
 
-The generated `final_prompt.txt` should contain:
+The generated prompt package should contain:
 
-1. full final prompt
+1. full final prompt when debug export is enabled
 2. selected negative blocks
 3. output settings
 4. notes about reference image priorities
+5. quality checks for fingers, footwear or barefoot state, lighting conflict, and scene conflict

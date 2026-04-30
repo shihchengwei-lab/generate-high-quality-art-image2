@@ -98,7 +98,7 @@ def main() -> None:
         write_score_files(out_dir, final_prompt, generation_settings, negative_prompt, reference_interpretation)
 
     print(f"Debug prompt package created: {out_dir}")
-    print("Default user workflow is generate_direct.py. This prompt package is for debug/review only.")
+    print("Default user workflow is Codex built-in image_gen. This prompt package is for debug/review only.")
 
 
 if __name__ == "__main__":

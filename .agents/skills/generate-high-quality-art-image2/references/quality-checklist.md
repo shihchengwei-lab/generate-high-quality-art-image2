@@ -1,18 +1,26 @@
 # Quality Checklist
 
-Score each item from 0 to 5.
+Score each item from 0 to 5.
 
 Use this checklist after generating, reviewing, or preparing a revision prompt.
 
 ## Identity
 
-- Face identity preserved from reference image 1
+- Face identity preserved from reference image 1
 - Age impression preserved
 - Hairstyle preserved
 - Core silhouette preserved
-- Costume identity preserved
+- Costume identity preserved unless attire change was explicitly allowed
 - Symbolic identity preserved
 - Emotional tone preserved
+- Immutable identity traits were placed before pose, attire, scene, and lighting in the prompt
+
+## Allowed Changes
+
+- Only the requested attire, scene, pose, camera, framing, or compatible lighting changed
+- No unrequested face, age, hairstyle, body proportion, or temperament drift
+- Same-character variation kept the same person first
+- Image B did not overwrite Image A identity
 
 ## Anatomy
 
@@ -22,16 +30,27 @@ Use this checklist after generating, reviewing, or preparing a revision prompt.
 - Hands are readable
 - Fingers are not fused
 - Finger count is correct
+- No extra fingers
+- No missing fingers
 - Body balance is believable
 - Pose is possible
 - Perspective is stable
 - No floating limbs
 
+## Footwear / Bare Feet
+
+- Barefoot instruction was followed when requested
+- Shoe, boot, sandal, or other footwear instruction was followed when requested
+- Footwear did not switch state without instruction
+- Feet, toes, socks, or shoes are not malformed when visible
+- Footwear style does not conflict with the scene or attire
+
 ## Costume
 
 - Costume hierarchy is clear
 - Silhouette is readable
-- Robe / clothing layers are coherent
+- Robe / clothing layers are coherent
+- Requested attire change is visible
 - No fragmented costume panels
 - No random ornaments
 - No excessive ribbons
@@ -43,6 +62,7 @@ Use this checklist after generating, reviewing, or preparing a revision prompt.
 ## Lighting
 
 - Main light direction is consistent
+- Light source matches the scene and time of day
 - Divine glow is controlled
 - Highlights are clean
 - No harsh edge halos
@@ -50,6 +70,7 @@ Use this checklist after generating, reviewing, or preparing a revision prompt.
 - No scattered highlights
 - No broken shading
 - Atmosphere supports the subject
+- No conflict between reference lighting and user-requested lighting
 
 ## Texture
 
@@ -61,9 +82,12 @@ Use this checklist after generating, reviewing, or preparing a revision prompt.
 - Smooth gradients where needed
 - Materials transition naturally
 
-## Background
+## Background / Scene
 
 - Background supports the subject
+- User-selected scene is present
+- Pose-reference scene did not take over
+- No conflict between requested scene, props, time, and lighting
 - No random floating text
 - No code fragments
 - No unreadable glyphs
@@ -72,25 +96,28 @@ Use this checklist after generating, reviewing, or preparing a revision prompt.
 - No fake signage unless explicitly requested
 - Subject/background separation is clean
 
-## Game fit
+## Game Fit
 
 - Readable at mobile size
 - Character role is clear
 - Emotional tone fits the project
-- Image can function as card / portrait / story art
+- Image can function as card / portrait / story art
 - Composition is not too crowded
 - Important gesture is readable
 - Works with UI crop area if intended for card art
 
-## Pass / fail guidance
+## Pass / Fail Guidance
 
 A generated image is acceptable only if:
 
-- identity score average >= 4
-- anatomy score average >= 4
-- lighting score average >= 4
+- identity score average >= 4
+- anatomy score average >= 4
+- lighting score average >= 4
 - no severe hand/finger failure
 - no severe face identity failure
+- no footwear or barefoot-state failure when visible
+- no scene-source conflict
+- no lighting-source conflict
 - no random text/glyph/code artifacts
 - no major costume fragmentation
 - no major background clutter over the subject

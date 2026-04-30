@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import argparse
-import base64
 from pathlib import Path
 from typing import Any
 
@@ -73,58 +72,45 @@ def _write_debug_artifacts(
     write_text(out_dir / "prompt_score.md", render_score_markdown(score))
 
 
-def _run_generation(
+def _write_builtin_generation_notice(
     out_dir: Path,
     prompt: str,
     settings: dict[str, Any],
     reference_paths: list[Path],
 ) -> None:
-    image_files: list[Any] = []
     for ref_path in reference_paths:
         if not ref_path.exists():
             raise SystemExit(f"Reference image not found: {ref_path}")
-
-    try:
-        from openai import OpenAI
-    except ImportError as exc:
-        raise SystemExit("Missing dependency: openai. Install with `pip install openai`.") from exc
-
-    try:
-        image_files = [open(path, "rb") for path in reference_paths]
-        client = OpenAI()
-        result = client.images.edit(
-            model=settings.get("model", "gpt-image-2"),
-            image=image_files,
-            prompt=prompt,
-            size=settings.get("size", "1024x1536"),
-            quality=settings.get("quality", "high"),
+    write_text(
+        out_dir / "codex_imagegen_notice.md",
+        "\n".join(
+            [
+                "# Codex Built-In Image Generation",
+                "",
+                "Local API-based image generation is disabled for this skill.",
+                "Use Codex's built-in `image_gen` tool for the actual image generation step.",
+                "",
+                "Reference images validated:",
+                *(f"- {path}" for path in reference_paths),
+                "",
+                "Generation settings:",
+                f"- model: {settings.get('model', 'gpt-image-2')}",
+                f"- size: {settings.get('size', '1024x1536')}",
+                f"- quality: {settings.get('quality', 'high')}",
+                "",
+                "Prompt length:",
+                f"- {len(prompt)} characters",
+            ]
         )
-        image_base64 = result.data[0].b64_json
-        result_path = out_dir / "result.png"
-        result_path.write_bytes(base64.b64decode(image_base64))
-        write_json(
-            out_dir / "generation_result.json",
-            {
-                "model": settings.get("model", "gpt-image-2"),
-                "size": settings.get("size", "1024x1536"),
-                "quality": settings.get("quality", "high"),
-                "result_path": str(result_path),
-                "reference_image_count": len(reference_paths),
-            },
-        )
-    finally:
-        for image_file in image_files:
-            try:
-                image_file.close()
-            except Exception:
-                pass
+        + "\n",
+    )
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run reference-driven direct generation with Image 2.0.")
     parser.add_argument("--spec", required=True, help="Path to YAML spec.")
     parser.add_argument("--out", default="outputs", help="Output base directory.")
-    parser.add_argument("--dry-run", action="store_true", help="Build internal artifacts without calling the Image API.")
+    parser.add_argument("--dry-run", action="store_true", help="Build internal artifacts without local image generation.")
     args = parser.parse_args()
 
     spec_path = Path(args.spec)
@@ -151,6 +137,7 @@ def main() -> None:
     write_json(out_dir / "generation_settings.json", generation_settings)
 
     generated = False
+    builtin_notice_written = False
     if debug_export_prompt:
         _write_debug_artifacts(
             out_dir=out_dir,
@@ -164,15 +151,17 @@ def main() -> None:
 
     should_generate = bool(spec.get("run_generation", True)) and not args.dry_run
     if should_generate:
-        _run_generation(out_dir, prompt, generation_settings, _resolve_reference_paths(spec, spec_path))
-        generated = True
+        _write_builtin_generation_notice(out_dir, prompt, generation_settings, _resolve_reference_paths(spec, spec_path))
+        builtin_notice_written = True
 
     write_text(out_dir / "direct_generation_summary.md", build_direct_summary(spec, generated, args.dry_run))
     print(f"Direct generation job prepared: {out_dir}")
     if generated:
         print(f"Generated image saved to: {out_dir / 'result.png'}")
     elif args.dry_run:
-        print("Dry run complete. Image API was not called.")
+        print("Dry run complete. No local image generation was attempted.")
+    elif builtin_notice_written:
+        print("Local API generation is disabled. Use Codex built-in image_gen for the image.")
     else:
         print("Generation skipped because run_generation is false.")
 

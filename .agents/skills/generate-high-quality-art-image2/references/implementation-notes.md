@@ -8,7 +8,7 @@ The skill has six phases:
 2. Select negative modules
 3. Build prompt
 4. Score prompt
-5. Generate only when explicitly authorized
+5. Generate with Codex built-in Image 2.0 when explicitly requested
 6. Inspect and revise
 
 ## Analyze
@@ -57,6 +57,7 @@ Use:
 
 - `references/prompt-structure.md`
 - `references/reference-image-policy.md`
+- `references/awesome-gpt-image-2-notes.md`
 - `references/negative-prompts.md`
 - `references/wishwalking-style-bible.md` when relevant
 - `references/negative-module-selection.md`
@@ -67,11 +68,35 @@ Outputs:
 - `generation_settings.json`
 - `quality_checklist.md`
 
+### Direct character prompt schema
+
+The direct prompt builder supports the older spec fields and these optional structured fields:
+
+- `reference_lock`
+- `immutable_identity`
+- `allowed_changes`
+- `attire`
+- `composition`
+- `composition.pose`
+- `scene_direction.description` / `scene_direction.environment`
+- `scene_direction.lighting`
+- `negative_prompt`
+
+Minimal compatibility rule: keep existing specs valid. If a spec omits the newer fields, the builder derives identity locks from `subject.must_keep`, derives pose from `composition.pose`, derives scene and lighting from `scene_direction`, and uses selected negative modules as the default negative prompt.
+
+For same-character variation, set:
+
+```yaml
+prompt_template: "same_character_variation"
+```
+
+Use it when the user wants the same person locked while changing only attire, scene, or pose. The prompt must place character consistency constraints before attire, composition, scene, lighting, and negative prompt sections.
+
 ## Prompt Scoring
 
 Use `scripts/lib/prompt_scorer.py`.
 
-Prompt scoring is rule-based and deterministic. It does not call an LLM, Image API, or external service.
+Prompt scoring is rule-based and deterministic. It does not call an LLM or external service.
 
 Outputs:
 
@@ -112,20 +137,21 @@ Outputs:
 
 ## Generate
 
-Only run generation if:
+For normal skill use, generate by calling Codex's built-in `image_gen` tool. Do not call image-generation APIs from local scripts, and do not require `OPENAI_API_KEY`.
+
+Only call built-in image generation if:
 
 ```yaml
 run_generation: true
 ```
 
-If `run_generation` is missing or false, do not call the image API.
+If `run_generation` is missing or false, do not call built-in image generation.
 
-Use `gpt-image-2`.
+Use Codex built-in Image 2.0.
 
-Outputs only when authorized:
+Outputs when authorized:
 
-- `result.png`
-- `generation_result.json`
+- the generated image saved by Codex's built-in image generation system
 
 ## Inspect
 
