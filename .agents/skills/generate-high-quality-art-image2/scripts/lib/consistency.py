@@ -199,7 +199,7 @@ def build_multi_image_summary(spec: dict[str, Any], risks_by_image: dict[str, li
         [
             "## Safety",
             "",
-            "This workflow creates prompt-planning files only. It does not call the Image API.",
+            "This workflow creates prompt-planning files only. It does not call external image-generation services.",
         ]
     )
     return "\n".join(lines).rstrip() + "\n"

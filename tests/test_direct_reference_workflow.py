@@ -130,6 +130,50 @@ class DirectReferenceWorkflowTests(unittest.TestCase):
         self.assertIn("the user's written scene description overrides image b environment completely", prompt)
         self.assertIn("image b ignore", prompt)
 
+    def test_e_same_character_variation_schema_is_front_loaded(self) -> None:
+        spec = base_spec()
+        spec["asset_name"] = "test_same_character_variation"
+        spec["execution_mode"] = "debug"
+        spec["debug_export_prompt"] = True
+        spec["prompt_template"] = "same_character_variation"
+        spec["reference_lock"] = {
+            "identity": "Image A",
+            "pose": "Image B",
+            "scene_lighting": "user text",
+        }
+        spec["immutable_identity"] = [
+            "same face identity",
+            "same age impression",
+            "same body proportion",
+            "same hairstyle",
+        ]
+        spec["allowed_changes"] = ["attire", "scene", "pose"]
+        spec["attire"] = {
+            "change_request": "replace ceremonial robe with travel cloak",
+            "footwear": "soft black boots, not barefoot",
+            "materials": "matte fabric, simple leather strap",
+        }
+        spec["negative_prompt"] = ["do not change face identity", "do not switch boots to bare feet"]
+        job_dir = run_direct(spec)
+        prompt = (job_dir / "final_prompt.txt").read_text(encoding="utf-8").lower()
+        checklist = (job_dir / "quality_checklist.md").read_text(encoding="utf-8").lower()
+
+        lock_index = prompt.index("character consistency lock")
+        attire_index = prompt.index("attire / outfit")
+        scene_index = prompt.index("scene authority from user text")
+        self.assertLess(lock_index, attire_index)
+        self.assertLess(lock_index, scene_index)
+        self.assertIn("reference_lock", prompt)
+        self.assertIn("immutable_identity", prompt)
+        self.assertIn("allowed_changes", prompt)
+        self.assertIn("same_character_variation rule", prompt)
+        self.assertIn("soft black boots, not barefoot", prompt)
+        self.assertIn("negative prompt / custom avoid list", prompt)
+        self.assertIn("hands and fingers", checklist)
+        self.assertIn("bare feet / footwear", checklist)
+        self.assertIn("lighting conflict", checklist)
+        self.assertIn("scene conflict", checklist)
+
 
 if __name__ == "__main__":
     unittest.main()

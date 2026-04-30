@@ -1,44 +1,63 @@
 ---
 name: generate-high-quality-art-image2
-description: Generate production-quality single-image game art, deity illustrations, character cards, story illustrations, key visuals, and promotional artwork using Image 2.0 / gpt-image-2 with one or two reference images. Use for reference-driven direct generation where Image A controls identity, Image B controls pose/composition, and user text controls scene, lighting, atmosphere, time, effects, and story moment. Do not use for sprite sheets, animation frames, tilemaps, transparent-background game assets, UI icon batches, collision data, asset slicing, or game-engine integration.
+description: Generate production-quality single-image game art, deity illustrations, character cards, story illustrations, key visuals, and promotional artwork using Codex built-in Image 2.0 generation, not local API calls. Use for reference-driven direct generation where Image A controls identity, Image B controls pose/composition, and user text controls scene, lighting, atmosphere, time, effects, and story moment. Do not use for sprite sheets, animation frames, tilemaps, transparent-background game assets, UI icon batches, collision data, asset slicing, or game-engine integration.
 ---
 
 # Generate High Quality Art with Image 2.0
 
 ## Purpose
 
-This skill creates high-quality single-image art using a reference-driven direct generation workflow.
+This skill creates high-quality single-image art using Codex's built-in Image 2.0 image generation tool.
 
 It supports:
 
 - single-image game art, deity cards, story illustrations, key visuals, and promotional art
 - one or two reference images
 - strict reference role assignment
-- direct generation by default
+- same-character variation prompts where identity is locked and only attire, scene, or pose changes
+- direct generation by default through the built-in `image_gen` tool
 - debug-only prompt export
 - automatic negative prompt module selection
 - rule-based prompt scoring in debug mode
 
 This skill is not for sprite sheets, animation frame sheets, tilemaps, transparent-background assets, UI icons, asset slicing, collision data, or game-engine integration.
+It also does not include UI, infographic, commercial poster, brand identity, logo, or product advertising templates.
 
 ## Default behavior
 
-Default mode is direct generation.
+Default mode is direct generation through Codex built-in Image 2.0.
 
 ```yaml
 execution_mode: "direct"
 debug_export_prompt: false
 ```
 
-The prompt is an internal intermediate artifact. Do not ask the user to manually transfer `final_prompt.txt` unless they explicitly request debug output.
+For normal user work:
 
-Use:
+- Do call the built-in `image_gen` tool directly.
+- Do not call image-generation APIs from local scripts.
+- Do not require or ask for `OPENAI_API_KEY`.
+- Do not ask the user to manually transfer `final_prompt.txt` unless they explicitly request debug output.
+- If reference images are local files and not already attached in the thread, inspect/open them first so the built-in generator has the visual context, then refer to them as Image A and Image B in the `image_gen` prompt.
+
+The final prompt sent to `image_gen` must include:
+
+- the reference authority block
+- the character consistency lock block
+- immutable identity and allowed-change rules before pose, attire, scene, and lighting
+- the user's scene, lighting, atmosphere, time, effects, and story moment
+- anti-sheet constraints
+- anti-Image-B-background-takeover constraints
+- selected negative constraints when relevant
+
+Use helper scripts only for validation or debug prompt packages:
 
 ```bash
-python .agents/skills/generate-high-quality-art-image2/scripts/generate_direct.py --spec <spec.yaml>
+python .agents/skills/generate-high-quality-art-image2/scripts/generate_direct.py --spec <spec.yaml> --dry-run
+python .agents/skills/generate-high-quality-art-image2/scripts/build_prompt.py --spec <spec.yaml>
 ```
 
-Use `--dry-run` for validation without an Image API call.
+Do not run `generate_direct.py` without `--dry-run` as the primary generation path. Local scripts cannot invoke Codex's built-in image generation tool.
 
 ## Reference image rules
 
@@ -105,6 +124,36 @@ User text > Image B
 
 Image B's environment must not take over the final image.
 
+## Character prompt templates
+
+Supported template families:
+
+- `character_illustration`
+- `character_setting_art`
+- `narrative_scene`
+- `same_character_variation`
+
+Use `same_character_variation` when the user wants the same person locked while changing only clothes, scene, or pose.
+
+```yaml
+prompt_template: "same_character_variation"
+immutable_identity:
+  - "same face identity"
+  - "same age impression"
+  - "same body proportion"
+allowed_changes:
+  - "attire"
+  - "scene"
+  - "pose"
+attire:
+  footwear: "follow the user's shoe or barefoot instruction exactly"
+negative_prompt:
+  - "do not change face identity"
+  - "do not switch barefoot/shoe state unless requested"
+```
+
+For this template, put the character consistency lock near the front of the prompt before attire, composition, scene, lighting, and negative prompt sections.
+
 ## Anti-sheet and anti-takeover constraints
 
 Always include the following internal constraints:
@@ -117,12 +166,12 @@ Always include the following internal constraints:
 
 ## Output files
 
-Direct mode writes:
+Built-in direct generation writes the final image through Codex's normal generated-image output location.
+
+Dry-run / debug helper scripts may write:
 
 - `generation_settings.json`
 - `direct_generation_summary.md`
-- `result.png` only when generation actually runs
-- `generation_result.json` only when generation succeeds
 
 Debug mode additionally writes:
 
@@ -136,4 +185,11 @@ Debug mode additionally writes:
 
 ## Quality workflow
 
-Use direct mode for normal user work. Use debug mode only when diagnosing reference-role drift, sheet-layout takeover, or Image B background takeover.
+Use built-in direct generation for normal user work. Use debug mode only when diagnosing reference-role drift, sheet-layout takeover, or Image B background takeover.
+
+Quality checks must cover:
+
+- hands and finger count
+- barefoot / footwear state
+- lighting-source conflict
+- scene-source conflict
