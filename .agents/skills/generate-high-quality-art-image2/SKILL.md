@@ -19,9 +19,18 @@ It supports:
 - debug-only prompt export
 - automatic negative prompt module selection
 - rule-based prompt scoring in debug mode
+- root-level structured templates for planning and handoff
 
 This skill is not for sprite sheets, animation frame sheets, tilemaps, transparent-background assets, UI icons, asset slicing, collision data, or game-engine integration.
 It also does not include UI, infographic, commercial poster, brand identity, logo, or product advertising templates.
+
+## Structured planning assets
+
+The repository root contains planning templates in `docs/`, `templates/`, `schemas/`, `quality_checks/`, and `examples/`.
+
+Use those files when the user asks for a structured prompt plan, a character sheet brief, a locked-character variation brief, or a narrative scene brief.
+
+Normal image generation still follows the direct reference workflow in this skill. The root templates are handoff and debug assets; they are not required for ordinary one-off generation.
 
 ## Default behavior
 

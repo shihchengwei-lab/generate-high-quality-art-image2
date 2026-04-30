@@ -68,6 +68,24 @@ Outputs:
 - `generation_settings.json`
 - `quality_checklist.md`
 
+## Root Structured Template Assets
+
+The repository root contains formal handoff assets for Prompt-as-Code planning:
+
+- `docs/`
+- `templates/`
+- `schemas/`
+- `quality_checks/`
+- `examples/`
+
+These root assets define three planning families:
+
+- `character_locked_scene`
+- `character_sheet`
+- `narrative_scene`
+
+They are intended for structured prompt planning, review, and future compiler work. The skill runtime references remain the source for direct/debug generation behavior. Do not wire root templates into runtime generation in this iteration.
+
 ### Direct character prompt schema
 
 The direct prompt builder supports the older spec fields and these optional structured fields:

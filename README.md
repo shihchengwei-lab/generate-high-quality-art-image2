@@ -20,6 +20,68 @@ It is not designed for sprite sheets, animation frames, tilemaps, transparent-ba
 .agents/skills/generate-high-quality-art-image2/
 ```
 
+## Structured prompt templates
+
+This repo also provides root-level Prompt-as-Code assets for planning, review, and agent handoff:
+
+```text
+docs/            method notes, schema guide, design principles
+templates/       human-readable Markdown templates and agent-readable JSON templates
+schemas/         lightweight JSON Schema files for future validation or form generation
+quality_checks/  concrete acceptance checks for each template family
+examples/        filled examples showing how to use each template
+```
+
+These assets are planning and debug resources. They do not replace the direct reference-generation workflow used by the skill.
+
+### Core template families
+
+Use `character_locked_scene` when the same person must remain recognizable and only selected items change:
+
+- attire or footwear
+- accessories
+- scene
+- pose
+- lighting
+
+Use `character_sheet` when creating a stable character reference sheet:
+
+- front view
+- side or 3/4 view
+- back view
+- face closeup
+- costume detail
+- accessory detail
+
+Use `narrative_scene` when the image must show a story moment:
+
+- story context
+- action happening now
+- emotional core
+- camera language
+- lighting logic
+- symbolic effects
+
+### How JSON becomes a prompt
+
+When assembling a prompt from a JSON template:
+
+1. Start with `task_type` and output contract.
+2. Place `reference_lock` and identity rules first.
+3. List `immutable_identity`, `allowed_changes`, `conditional_overrides`, and `forbidden_changes`.
+4. Add appearance, attire, accessories, pose, composition, scene, story, camera, and lighting fields.
+5. Add style and symbolic elements.
+6. Add concrete `quality_checks`.
+7. End with `negative_prompt` and `output_format`.
+
+See `docs/prompt-schema.md` for the full field vocabulary.
+
+### Method source boundary
+
+This project references `freestylefly/awesome-gpt-image-2` for structural methods only: schema-style prompts, dual Markdown/JSON templates, identity-first ordering, narrative decomposition, layout locking, and QA-style failure prevention.
+
+It does not copy third-party case prompts, images, UI examples, poster examples, logo examples, product ad examples, or commercial visual content.
+
 ## Core workflow
 
 ```text

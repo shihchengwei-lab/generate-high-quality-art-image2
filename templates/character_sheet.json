@@ -1,0 +1,58 @@
+{
+  "task_type": "character_sheet",
+  "reference_lock": true,
+  "character_identity": {
+    "face": "",
+    "facial_proportions": "",
+    "hair": "",
+    "body_proportion": "",
+    "age_impression": "",
+    "temperament": "",
+    "recognizable_traits": []
+  },
+  "outfit_definition": {
+    "base_outfit": "",
+    "color_palette": "",
+    "materials": "",
+    "silhouette": "",
+    "footwear": "",
+    "fixed_accessories": []
+  },
+  "layout": {
+    "canvas_ratio": "16:9",
+    "panel_count": 6,
+    "panels": [
+      "front_view",
+      "side_or_3quarter_view",
+      "back_view",
+      "face_closeup",
+      "costume_detail",
+      "accessory_detail"
+    ],
+    "spacing": "",
+    "labeling": ""
+  },
+  "panel_requirements": {
+    "front_view": "",
+    "side_or_3quarter_view": "",
+    "back_view": "",
+    "face_closeup": "",
+    "costume_detail": "",
+    "accessory_detail": ""
+  },
+  "sheet_constraints": [],
+  "style": {
+    "rendering": "",
+    "line_finish": "",
+    "color_finish": "",
+    "detail_density": ""
+  },
+  "quality_checks": [],
+  "negative_prompt": [],
+  "output_format": {
+    "aspect_ratio": "16:9",
+    "resolution_hint": "",
+    "file_format": "png",
+    "output_count": 1
+  }
+}

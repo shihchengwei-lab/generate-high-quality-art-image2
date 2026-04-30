@@ -1,0 +1,63 @@
+{
+  "task_type": "narrative_scene",
+  "reference_lock": true,
+  "immutable_identity": {
+    "face": "",
+    "facial_proportions": "",
+    "hair": "",
+    "body_proportion": "",
+    "age_impression": "",
+    "temperament": "",
+    "recognizable_traits": []
+  },
+  "allowed_changes": {
+    "scene": "",
+    "pose": "",
+    "camera": "",
+    "lighting": "",
+    "symbolic_effects": ""
+  },
+  "forbidden_changes": [],
+  "story_context": "",
+  "action_now": "",
+  "emotional_core": "",
+  "subject": "",
+  "scene_state": "",
+  "camera_language": {
+    "shot_type": "",
+    "distance": "",
+    "angle": "",
+    "focus": "",
+    "composition": ""
+  },
+  "lighting_logic": {
+    "primary_light_source": "",
+    "secondary_light_source": "",
+    "direction": "",
+    "mood": "",
+    "consistency_rules": []
+  },
+  "symbolic_effects": [],
+  "scene": {
+    "location": "",
+    "time": "",
+    "weather": "",
+    "atmosphere": "",
+    "narrative_background_elements": []
+  },
+  "pose": {
+    "body_action": "",
+    "hand_action": "",
+    "gaze": "",
+    "interaction_with_scene": ""
+  },
+  "style": "",
+  "quality_checks": [],
+  "negative_prompt": [],
+  "output_format": {
+    "aspect_ratio": "",
+    "resolution_hint": "",
+    "file_format": "png",
+    "output_count": 1
+  }
+}
