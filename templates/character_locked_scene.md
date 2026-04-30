@@ -5,6 +5,8 @@ Use this template when the same character must be preserved while only selected 
 ## 1. Task
 
 - task_type: `character_locked_scene`
+- mode: `host_native`
+- quality_mode: `standard`
 - intended_use:
 - output_count: one finished illustration
 

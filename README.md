@@ -4,6 +4,8 @@ Agent skill for reference-driven direct generation of high-quality single-image 
 
 This repository contains a reusable `.agents` skill for polished character art, deity illustrations, mobile game card art, story illustrations, key visuals, and promotional artwork using one or two reference images.
 
+It is a skill-oriented support repo for Codex / Agent workflows. It is not a prompt gallery, not a UI template collection, and not a general image-prompt catalog.
+
 The current workflow is designed for:
 
 - Image A as the identity sheet source
@@ -25,7 +27,7 @@ It is not designed for sprite sheets, animation frames, tilemaps, transparent-ba
 This repo also provides root-level Prompt-as-Code assets for planning, review, and agent handoff:
 
 ```text
-docs/            method notes, schema guide, design principles
+docs/            method notes, schema guide, skill architecture, prompt assembly, vocabulary
 templates/       human-readable Markdown templates and agent-readable JSON templates
 schemas/         lightweight JSON Schema files for future validation or form generation
 quality_checks/  concrete acceptance checks for each template family
@@ -33,6 +35,18 @@ examples/        filled examples showing how to use each template
 ```
 
 These assets are planning and debug resources. They do not replace the direct reference-generation workflow used by the skill.
+
+### Where to start
+
+For Codex / Agent use:
+
+1. Read `docs/skill-architecture.md` to understand the support-repo structure.
+2. Choose `character_locked_scene`, `character_sheet`, or `narrative_scene`.
+3. Fill the matching Markdown or JSON template in `templates/`.
+4. Use `docs/prompt-assembly.md` to assemble the final prompt.
+5. Review the matching file in `quality_checks/`.
+
+For ordinary image generation, use the installed skill or `.agents/skills/generate-high-quality-art-image2/SKILL.md`; the normal path remains Codex built-in Image 2.0 generation.
 
 ### Core template families
 
@@ -76,9 +90,43 @@ When assembling a prompt from a JSON template:
 
 See `docs/prompt-schema.md` for the full field vocabulary.
 
+### Modes and quality modes
+
+Root templates may include:
+
+```json
+{
+  "mode": "host_native",
+  "quality_mode": "standard"
+}
+```
+
+`mode` tells the agent how to use the prompt brief:
+
+- `prompt_only`: write a prompt package only.
+- `advisor`: write the prompt and explain how to use it elsewhere.
+- `host_native`: prepare the prompt for the host agent's built-in image tool.
+
+`quality_mode` tells the agent how strict the prompt and checks should be:
+
+- `draft`
+- `standard`
+- `high_fidelity`
+- `character_lock_strict`
+
+These are planning fields. They do not replace `execution_mode: direct/debug` in the existing helper scripts.
+
 ### Method source boundary
 
-This project references `freestylefly/awesome-gpt-image-2` for structural methods only: schema-style prompts, dual Markdown/JSON templates, identity-first ordering, narrative decomposition, layout locking, and QA-style failure prevention.
+This project references external repos for structural methods only:
+
+- `openai/openai-cookbook`: official image prompting, image editing, and high input fidelity concepts.
+- `ConardLi/garden-skills`: skill mode separation and host-native/advisor design.
+- `wuyoscar/gpt_image_2_skill`: Codex/Agent skill packaging and CLI/gallery separation.
+- `OSideMedia/higgsfield-ai-prompt-skill`: prompt decomposition, identity/action separation, and troubleshooting style.
+- P2/P3 references are documented in `docs/external-repo-evaluation.md`.
+
+These sources inform schema-style prompts, dual Markdown/JSON templates, identity-first ordering, prompt assembly order, narrative decomposition, layout locking, quality modes, and failure-aware checks.
 
 It does not copy third-party case prompts, images, UI examples, poster examples, logo examples, product ad examples, or commercial visual content.
 

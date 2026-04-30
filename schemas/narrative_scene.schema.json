@@ -23,6 +23,16 @@
       "const": "narrative_scene",
       "description": "Story-driven single character illustration."
     },
+    "mode": {
+      "type": "string",
+      "enum": ["prompt_only", "advisor", "host_native"],
+      "description": "How an agent should use this structured prompt brief."
+    },
+    "quality_mode": {
+      "type": "string",
+      "enum": ["draft", "standard", "high_fidelity", "character_lock_strict"],
+      "description": "Planning hint for fidelity and quality checks; does not change runtime API behavior."
+    },
     "reference_lock": {
       "type": ["boolean", "object"],
       "description": "Identity and source authority rules."

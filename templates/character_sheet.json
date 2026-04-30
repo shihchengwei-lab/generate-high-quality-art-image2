@@ -1,5 +1,7 @@
 {
   "task_type": "character_sheet",
+  "mode": "host_native",
+  "quality_mode": "standard",
   "reference_lock": true,
   "character_identity": {
     "face": "",

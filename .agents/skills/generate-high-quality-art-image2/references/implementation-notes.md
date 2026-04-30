@@ -86,6 +86,16 @@ These root assets define three planning families:
 
 They are intended for structured prompt planning, review, and future compiler work. The skill runtime references remain the source for direct/debug generation behavior. Do not wire root templates into runtime generation in this iteration.
 
+The root docs now also define:
+
+- `docs/external-repo-evaluation.md`: public method sources and adoption boundaries.
+- `docs/skill-architecture.md`: skill-support repo shape and input-to-output flow.
+- `docs/skill-modes.md`: planning modes `prompt_only`, `advisor`, and `host_native`.
+- `docs/prompt-assembly.md`: fixed prompt assembly order.
+- `docs/vocabulary.md`: minimal camera, lighting, composition, mood, action, and look vocabulary.
+
+Root template `mode` is separate from runtime `execution_mode`. `quality_mode` is a planning and quality-check hint, not an Image API parameter change.
+
 ### Direct character prompt schema
 
 The direct prompt builder supports the older spec fields and these optional structured fields:

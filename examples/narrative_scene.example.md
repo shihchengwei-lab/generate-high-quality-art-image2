@@ -9,6 +9,8 @@ Create a story illustration of a sacred healer discovering a broken shrine seal 
 ```json
 {
   "task_type": "narrative_scene",
+  "mode": "host_native",
+  "quality_mode": "standard",
   "reference_lock": true,
   "immutable_identity": {
     "face": "same sacred healer face",

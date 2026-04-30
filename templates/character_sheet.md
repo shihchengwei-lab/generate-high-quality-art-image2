@@ -5,6 +5,8 @@ Use this template for character setting art, three-view sheets, and detail callo
 ## 1. Task
 
 - task_type: `character_sheet`
+- mode: `host_native`
+- quality_mode: `standard`
 - intended_use:
 - output_count: one character sheet image
 

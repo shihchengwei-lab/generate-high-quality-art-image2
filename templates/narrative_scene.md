@@ -5,6 +5,8 @@ Use this template for one story-driven character illustration. The image must sh
 ## 1. Task
 
 - task_type: `narrative_scene`
+- mode: `host_native`
+- quality_mode: `standard`
 - intended_use:
 - output_count: one finished narrative illustration
 

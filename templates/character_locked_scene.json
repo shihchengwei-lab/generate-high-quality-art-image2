@@ -1,5 +1,7 @@
 {
   "task_type": "character_locked_scene",
+  "mode": "host_native",
+  "quality_mode": "standard",
   "reference_lock": {
     "enabled": true,
     "identity_source": "Image A",

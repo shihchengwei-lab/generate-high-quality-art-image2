@@ -32,6 +32,16 @@ Use those files when the user asks for a structured prompt plan, a character she
 
 Normal image generation still follows the direct reference workflow in this skill. The root templates are handoff and debug assets; they are not required for ordinary one-off generation.
 
+For structured planning, start with:
+
+- `docs/skill-architecture.md` for the repo and workflow shape
+- `docs/skill-modes.md` for `prompt_only`, `advisor`, and `host_native`
+- `docs/prompt-assembly.md` for fixed prompt order
+- `docs/vocabulary.md` for minimal camera, lighting, composition, mood, action, and look terms
+- `docs/external-repo-evaluation.md` for public method sources and adoption boundaries
+
+Root template `mode` is a planning concept. It does not replace runtime `execution_mode: direct` or `execution_mode: debug`.
+
 ## Default behavior
 
 Default mode is direct generation through Codex built-in Image 2.0.

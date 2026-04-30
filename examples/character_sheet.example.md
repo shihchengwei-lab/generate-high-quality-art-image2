@@ -9,6 +9,8 @@ Create a character setting sheet for a sacred healer so future illustrations can
 ```json
 {
   "task_type": "character_sheet",
+  "mode": "prompt_only",
+  "quality_mode": "high_fidelity",
   "reference_lock": true,
   "character_identity": {
     "face": "soft youthful sacred healer face",

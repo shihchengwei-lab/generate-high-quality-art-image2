@@ -9,6 +9,8 @@ Create a new finished illustration of the same sacred healer character. Keep the
 ```json
 {
   "task_type": "character_locked_scene",
+  "mode": "host_native",
+  "quality_mode": "character_lock_strict",
   "reference_lock": {
     "enabled": true,
     "identity_source": "Image A",

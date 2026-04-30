@@ -4,6 +4,8 @@ This document defines the shared field vocabulary for the root templates. It is 
 
 Use the same field names across Markdown templates, JSON templates, schemas, examples, and quality checks.
 
+The schema is method-driven, not gallery-driven. It borrows structural ideas from official image prompting guidance, skill-oriented repos, and character-consistency workflows, but it does not copy third-party prompts or images.
+
 ## Assembly Order
 
 When assembling a final prompt, use this order:
@@ -20,6 +22,18 @@ When assembling a final prompt, use this order:
 
 Identity rules must appear before visual variation rules.
 
+See `docs/prompt-assembly.md` for the full assembly contract.
+
+## Method Sources
+
+Use these methods as field-design guidance:
+
+- Official image prompting and `input_fidelity`: preserve important reference details, describe the complete desired output, and separate unchanged identity from requested edits.
+- Skill mode design: distinguish prompt-only planning, host-native generation, and advisor handoff instead of treating every environment as local API generation.
+- Identity vs motion/action separation: keep static identity descriptors separate from pose, camera, and action language when strict character consistency matters.
+- Prompt decomposition: keep subject, camera, action, look, scene, lighting, quality checks, and output format in separate fields.
+- Quality presets: use `quality_mode` as planning language for how strict the prompt and checks should be.
+
 ## Fields
 
 ### `task_type`
@@ -28,6 +42,22 @@ Identity rules must appear before visual variation rules.
 - Required: yes.
 - Example: `character_locked_scene`.
 - Common mistakes: using a vague label such as `art` or mixing several task types in one file.
+
+### `mode`
+
+- Purpose: tells an agent how to use the structured prompt brief.
+- Required: optional; default is `host_native`.
+- Allowed values: `prompt_only`, `advisor`, `host_native`.
+- Example: `host_native`.
+- Common mistakes: confusing root template `mode` with runtime `execution_mode`.
+
+### `quality_mode`
+
+- Purpose: declares how strict the prompt and quality checks should be.
+- Required: optional; default is `standard`.
+- Allowed values: `draft`, `standard`, `high_fidelity`, `character_lock_strict`.
+- Example: `character_lock_strict`.
+- Common mistakes: assuming this changes Image API parameters. In this iteration it is only a planning and quality-check hint.
 
 ### `reference_lock`
 

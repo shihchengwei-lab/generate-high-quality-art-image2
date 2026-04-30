@@ -1,5 +1,7 @@
 {
   "task_type": "narrative_scene",
+  "mode": "host_native",
+  "quality_mode": "standard",
   "reference_lock": true,
   "immutable_identity": {
     "face": "",
