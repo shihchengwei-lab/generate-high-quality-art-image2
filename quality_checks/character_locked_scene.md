@@ -14,6 +14,7 @@ Applicable template: `templates/character_locked_scene.*`
 - Body proportion and core silhouette do not change.
 - Temperament remains readable.
 - Only listed `allowed_changes` are changed.
+- If several variants are requested, each variant has one clear change purpose and one final image target.
 - Any `conditional_overrides` are visible and limited to the named condition.
 - Full-body framing keeps head, hands, legs, feet, and footwear or bare feet visible.
 - Hands are readable and have complete fingers.
@@ -32,6 +33,7 @@ Applicable template: `templates/character_locked_scene.*`
 - Age drift: the character becomes noticeably younger or older.
 - Body-proportion drift: height, build, or silhouette changes without permission.
 - Clothing drift: the requested outfit is replaced by an unrelated costume.
+- Variant mixing: multiple requested changes are merged into one confused image.
 - Footwear drift: barefoot becomes shoes, or shoes leave remnants in a barefoot scene.
 - Accessory drift: pendant, weapon, hair ornament, or sacred item moves to the wrong side.
 - Hand failure: fused fingers, missing fingers, extra fingers, or extra palms.
@@ -43,6 +45,7 @@ Applicable template: `templates/character_locked_scene.*`
 
 - Move `reference_lock` and `immutable_identity` to the front of the prompt.
 - State exactly what may change in `allowed_changes`.
+- For multiple variants, write one prompt per final image and repeat the identity lock each time.
 - Put footwear or barefoot state in both `attire` and `quality_checks`.
 - For fixed accessories, specify side, height, attachment point, and whether it can move.
 - For full-body outputs, add `head-to-foot visible` and `do not crop feet or hands`.

@@ -58,6 +58,31 @@ For normal user work:
 - Do not require or ask for `OPENAI_API_KEY`.
 - Do not ask the user to manually transfer `final_prompt.txt` unless they explicitly request debug output.
 - If reference images are local files and not already attached in the thread, inspect/open them first so the built-in generator has the visual context, then refer to them as Image A and Image B in the `image_gen` prompt.
+- Treat input images as references unless the user explicitly asks to edit an existing image.
+- Do not silently switch from the built-in path to local API, CLI, ComfyUI, LoRA, or other provider workflows.
+- If the user asks for multiple distinct assets or variants, make one built-in generation call per distinct final image instead of merging unrelated deliverables into one prompt.
+
+## Output handling
+
+The built-in generator may save images outside this repository by default.
+
+Use this priority:
+
+1. If the image is only for preview or brainstorming, inline preview is enough.
+2. If the user names a destination, move or copy the selected final image there after generation.
+3. If the image is meant to be used by this project, move or copy the selected final image into the workspace before finishing.
+
+Never leave a project-referenced asset only in Codex's default generated-image location.
+
+## Iteration discipline
+
+When revising a generated result:
+
+- Identify the visible failure category first.
+- Keep the same Image A / Image B / user-text authority rules in every follow-up.
+- Change one targeted thing per revision when possible.
+- Preserve immutable identity before adjusting pose, attire, scene, lighting, or effects.
+- Do not add new style systems, providers, or pipeline steps just because one output failed.
 
 The final prompt sent to `image_gen` must include:
 

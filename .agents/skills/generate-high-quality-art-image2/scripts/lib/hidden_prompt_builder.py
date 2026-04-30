@@ -121,6 +121,8 @@ def _quality_checks_block() -> list[str]:
         "- bare feet / footwear: follow the prompt exactly; do not switch barefoot to shoes or shoes to barefoot unless requested.",
         "- lighting conflict: keep one coherent light direction and avoid mixing incompatible light sources.",
         "- scene conflict: use the user-selected scene only; do not import background, props, palette, or setting from a pose reference.",
+        "- variant scope: if several final images are requested, keep each image to one clear change purpose and repeat the identity lock.",
+        "- revision scope: when revising, change one targeted failure at a time while preserving identity and reference authority.",
     ]
 
 
@@ -301,6 +303,8 @@ def build_quality_checklist() -> str:
 - Bare feet / footwear instruction checked
 - Lighting conflict checked
 - Scene conflict checked
+- Variant scope checked when multiple final images are requested
+- Revision scope checked when refining an existing result
 
 ## Output format
 - One finished illustration

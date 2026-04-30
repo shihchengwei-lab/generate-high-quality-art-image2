@@ -9,6 +9,7 @@ Applicable template: `templates/narrative_scene.*`
 ## Must Pass
 
 - The image contains a visible event happening now.
+- The scene shows one story moment, not a compressed sequence of several moments.
 - The main character is active in the event or intentionally still for a story reason.
 - The result does not become a landscape-only image.
 - The result does not become a static standing portrait unless that is the stated story action.
@@ -26,6 +27,7 @@ Applicable template: `templates/narrative_scene.*`
 
 - The image becomes an atmospheric landscape with a tiny character.
 - The character stands still while the prompt asks for a dramatic action.
+- Several story beats appear at once and the active event becomes unclear.
 - Camera language conflicts with the requested framing.
 - Lighting creates mood but contradicts the stated light source or time.
 - Symbolic effects cover the face, hands, or key action.
@@ -36,6 +38,7 @@ Applicable template: `templates/narrative_scene.*`
 ## Repair Guidance
 
 - Put `action_now` in one short concrete sentence.
+- Remove earlier or later story beats from the final prompt unless they are visible background context.
 - State how the action is visible: hand action, body action, gaze, or object interaction.
 - Name one primary light source and make all other glow secondary.
 - Reduce symbolic effects when they cover character readability.

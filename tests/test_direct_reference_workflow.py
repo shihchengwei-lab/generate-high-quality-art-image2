@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import subprocess
 import sys
 import tempfile
@@ -173,6 +174,22 @@ class DirectReferenceWorkflowTests(unittest.TestCase):
         self.assertIn("bare feet / footwear", checklist)
         self.assertIn("lighting conflict", checklist)
         self.assertIn("scene conflict", checklist)
+        self.assertIn("variant scope", checklist)
+        self.assertIn("revision scope", checklist)
+
+    def test_f_prompt_score_accepts_normalized_reference_roles(self) -> None:
+        spec = base_spec()
+        spec["asset_name"] = "test_prompt_score_reference_roles"
+        spec["execution_mode"] = "debug"
+        spec["debug_export_prompt"] = True
+        job_dir = run_direct(spec)
+        score = json.loads((job_dir / "prompt_score.json").read_text(encoding="utf-8"))
+
+        self.assertNotIn(
+            "missing reference role assignment when references exist",
+            score["critical_issues"],
+        )
+        self.assertEqual(score["dimensions"]["reference_role_clarity"]["score"], 5)
 
 
 if __name__ == "__main__":

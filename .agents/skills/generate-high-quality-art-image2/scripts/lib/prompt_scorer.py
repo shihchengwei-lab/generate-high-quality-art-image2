@@ -36,6 +36,17 @@ def _count_hits(text: str, terms: list[str]) -> int:
     return sum(1 for term in terms if term and term in text)
 
 
+def _reference_roles_are_clear(reference_interpretation: str, ref_count: int) -> bool:
+    if ref_count == 0:
+        return True
+    interpretation = reference_interpretation.lower()
+    if "role: identity_sheet" not in interpretation:
+        return False
+    if ref_count == 1:
+        return True
+    return "role: pose_composition" in interpretation
+
+
 def score_prompt_package(
     final_prompt: str,
     generation_settings: dict[str, Any],
@@ -62,17 +73,14 @@ def score_prompt_package(
         "State the target asset, subject, and intended use in the opening lines.",
     )
 
-    ref_ok = ref_count == 0 or (
-        "role:" in reference_interpretation.lower()
-        and "reference image" in reference_interpretation.lower()
-    )
+    ref_ok = _reference_roles_are_clear(reference_interpretation, ref_count)
     dimensions["reference_role_clarity"] = _dimension(
         5 if ref_ok else 2,
         "Reference image roles are explicitly assigned."
         if ref_ok
         else "Reference images exist but their roles are not clear.",
         "Unclear reference roles can cause identity, pose, and lighting conflicts.",
-        "Assign each reference to identity/costume or pose/lighting/composition.",
+        "Assign each reference to identity or pose/composition.",
     )
 
     identity_hits = _count_hits(
@@ -239,7 +247,7 @@ def _critical_issues(
     issues: list[str] = []
     if not _has(prompt_lower, ["depict", "subject", "character", "deity", "portrait"]):
         issues.append("no clear subject")
-    if ref_count and not ("role:" in reference_interpretation and "reference image" in reference_interpretation):
+    if not _reference_roles_are_clear(reference_interpretation, ref_count):
         issues.append("missing reference role assignment when references exist")
     if _has(image_type, ["character", "deity", "portrait", "card", "story"]) and not _has(
         combined, ["identity", "face", "hairstyle", "age impression"]

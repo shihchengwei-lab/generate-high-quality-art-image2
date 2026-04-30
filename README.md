@@ -22,6 +22,25 @@ It is not designed for sprite sheets, animation frames, tilemaps, transparent-ba
 .agents/skills/generate-high-quality-art-image2/
 ```
 
+## Local Codex install
+
+For this Windows workspace, install or refresh the Codex-visible copy with:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools\sync_local_skill.ps1
+```
+
+The installed directory is:
+
+```text
+C:\Users\kk789\.codex\skills\generate-high-quality-art-image2
+```
+
+The installed copy should contain only the runtime skill folder shape: `SKILL.md`, `assets/`, `references/`, and `scripts/`.
+Root-level `docs/`, `templates/`, `schemas/`, `quality_checks/`, and `examples/` stay in this repository as planning and review assets.
+
+After syncing, restart Codex so the updated skill is picked up cleanly.
+
 ## Structured prompt templates
 
 This repo also provides root-level Prompt-as-Code assets for planning, review, and agent handoff:

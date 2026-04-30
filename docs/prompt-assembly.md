@@ -4,6 +4,17 @@ Prompt assembly turns a filled template into one final prompt. The order matters
 
 Use this file for root templates and future prompt-package tooling. Existing runtime scripts are not rewired in this iteration.
 
+## Assembly Boundary
+
+This repo keeps prompt assembly simple and inspectable. Public prompt-template engines show useful structure patterns, but this project does not need a Jinja, Handlebars, Dotprompt, or ComfyUI formatting runtime now.
+
+Use their lightweight lessons only:
+
+- Name each prompt part so it can be inspected and removed.
+- Validate required fields before building the final prompt.
+- Keep model metadata, input contract, prompt body, quality checks, and output contract conceptually separate.
+- Treat unused or unmatched fields as review signals instead of silently appending them to the final prompt.
+
 ## Core Rule
 
 Identity and source authority come before creative variation.
@@ -11,6 +22,8 @@ Identity and source authority come before creative variation.
 Do not bury critical identity instructions in the negative prompt. State them positively near the front, then repeat known risks in quality checks and negative prompt.
 
 ## Fixed Order
+
+Each numbered section below is a named prompt part. A future compiler may render these parts separately, but the current manual order is enough.
 
 ### 1. Output Contract And Task Type
 

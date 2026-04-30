@@ -8,8 +8,8 @@ The project goal is still narrow: support Codex and other agents in producing hi
 
 | Priority | Repos | Decision |
 |---|---|---|
-| P1 | `openai/openai-cookbook`, `ConardLi/garden-skills`, `wuyoscar/gpt_image_2_skill`, `OSideMedia/higgsfield-ai-prompt-skill` | Absorb immediately as method references. |
-| P2 | `artryazanov/ai-illustrator`, `rockbenben/img-prompt`, `somacoffeekyoto/imgx-mcp`, `shinpr/mcp-image` | Document now, keep most implementation for a later pipeline or tooling round. |
+| P1 | `openai/openai-cookbook`, `openai/codex` imagegen sample skill, `openai/skills`, `ConardLi/garden-skills`, `wuyoscar/gpt_image_2_skill`, `OSideMedia/higgsfield-ai-prompt-skill` | Absorb immediately as method references. |
+| P2 | `promptfoo/promptfoo`, `GAIR-NLP/AlphaEval`, `artryazanov/ai-illustrator`, `RishiDesai/CharForge`, `instantX-research/InstantID`, `AIDC-AI/Awesome-Multi-Image-Generation`, `DesertPixelAi/ComfyUI-DP-Ideogram-Character`, `fofr/cog-consistent-character`, `rockbenben/img-prompt`, `xLegende/ComfyUI-Prompt-Formatter`, `character-ai/prompt-poet`, `google/dotprompt`, `somacoffeekyoto/imgx-mcp`, `shinpr/mcp-image` | Document now, keep most implementation for a later pipeline or tooling round. |
 | P3 | `EvoLinkAI/awesome-gpt-image-2-prompts`, `YouMind-OpenLab/awesome-gpt-image-2`, `fattain-naime/ai-image-prompts` | Weak reference only for organization patterns. Do not import prompt-gallery content. |
 
 Most valuable methods for this repo:
@@ -19,12 +19,20 @@ Most valuable methods for this repo:
 - Identity-first ordering and preserve/change-only instructions for reference-driven edits.
 - Prompt decomposition into subject, camera, look, action, scene, lighting, and output.
 - Character reference cards, character sheets, and failure-aware quality checks.
+- Output handling discipline for host-native generation: preview-only output may stay in the host's default location, but project-bound assets must be copied into the workspace.
+- Prompt-template discipline: named parts, input contracts, and explicit output contracts are useful; full template-engine dependencies are not needed now.
+- Prompt evaluation should stay deterministic by default: local fixtures, assertions, and regression tests before optional LLM/VLM judging.
+- Installed Codex skills should be materialized folders with `SKILL.md`, `assets/`, `references/`, and `scripts/`, then verified after sync.
 
 Methods intentionally not adopted:
 
 - Large community prompt galleries as project content.
 - UI, brand, e-commerce, logo, poster, infographic, or unrelated template families.
 - Full MCP server, session history, undo/redo, and multi-provider backend behavior.
+- Full LoRA training, ComfyUI graph execution, Replicate/Cog deployment, and provider-specific character-reference backends.
+- Jinja, Handlebars, or YAML prompt-engine runtime dependencies.
+- Prompt eval frameworks, red-team scanners, model benchmarks, or VLM judges as required project dependencies.
+- Symlink-only installed skills, because current Codex loader behavior can skip symlinked `SKILL.md` files.
 - Third-party prompt text or demo image content.
 
 ## P1: Immediate Method Sources
@@ -52,6 +60,58 @@ Methods intentionally not adopted:
   - schemas: expose `quality_mode` for planning only.
   - quality_checks: include face, outfit, accessory, and lighting preservation checks.
   - future roadmap: consider an optional runtime mapping only if this repo later grows an API-backed path.
+
+### openai/codex imagegen sample skill
+
+- URL: <https://github.com/openai/codex/blob/main/codex-rs/skills/src/assets/samples/imagegen/SKILL.md>
+- Type: official Codex skill sample.
+- Relevance: high.
+- Applicable stage: now.
+- Absorb:
+  - Built-in image generation as the default host-native path.
+  - Clear distinction between reference images and edit targets.
+  - Project-bound output must be copied into the workspace instead of left only in the host default output location.
+  - Multiple distinct assets should be handled as separate generation calls.
+  - Iteration should preserve invariants and make targeted changes.
+- Do not absorb:
+  - General website, product, icon, logo, transparency, and CLI-fallback workflows outside this repo's character-art scope.
+  - Any fallback script implementation.
+- Local landing positions:
+  - SKILL.md: strengthen output handling and revision discipline.
+  - implementation notes: keep local scripts as validation/debug helpers only.
+
+### openai/skills
+
+- URL: <https://github.com/openai/skills>
+- Type: official Codex skills catalog.
+- Relevance: high.
+- Applicable stage: now.
+- Absorb:
+  - A skill is a folder of instructions, scripts, and resources for repeatable agent work.
+  - Installed skills need a proper `SKILL.md` with clear `name` and `description` frontmatter.
+  - After installing or updating a skill, restart Codex.
+  - Keep detailed docs in `references/` or repo docs rather than bloating `SKILL.md`.
+- Do not absorb:
+  - Catalog distribution workflow, curated/experimental publishing, or unrelated skill metadata.
+- Local landing positions:
+  - README and `docs/skill-architecture.md`: document local sync and restart steps.
+  - `tools/sync_local_skill.ps1`: materialize and verify the installed local skill copy.
+
+### openai/codex skill loader issue
+
+- URL: <https://github.com/openai/codex/issues/17344>
+- Type: current Codex issue about user-installed skill discovery.
+- Relevance: high for local deployment behavior.
+- Applicable stage: now.
+- Absorb:
+  - Avoid symlink-only `SKILL.md` installs for this repo's local workflow.
+  - Materialize the installed skill files under `~/.codex/skills/<skill-name>/`.
+  - Verify the installed copy after sync instead of assuming Codex will follow repo-backed links.
+- Do not absorb:
+  - Upstream loader patching or app-server protocol changes.
+- Local landing positions:
+  - `tools/sync_local_skill.ps1`: copy files rather than creating a symlink.
+  - README: tell the user to restart Codex after syncing.
 
 ### ConardLi/garden-skills
 
@@ -119,6 +179,37 @@ Methods intentionally not adopted:
 
 ## P2: Next-Stage References
 
+### promptfoo/promptfoo
+
+- URL: <https://github.com/promptfoo/promptfoo>
+- Type: prompt evaluation framework.
+- Relevance: medium.
+- Applicable stage: now as testing philosophy, not dependency.
+- Absorb:
+  - Treat prompts as testable artifacts with local, repeatable checks.
+  - Prefer declarative fixtures and assertions for regressions.
+  - Keep evaluation local by default when no live model output is needed.
+- Do not absorb:
+  - Promptfoo runtime, provider matrix, red-team scanning, CI setup, or external model calls.
+- Local landing positions:
+  - tests: keep deterministic prompt-package tests.
+  - docs: describe optional future eval fixtures, not mandatory promptfoo integration.
+
+### GAIR-NLP/AlphaEval
+
+- URL: <https://github.com/GAIR-NLP/AlphaEval>
+- Type: agent evaluation benchmark framework.
+- Relevance: medium.
+- Applicable stage: reference only.
+- Absorb:
+  - Separate verifiable checks from subjective rubric checks.
+  - Use hybrid evaluation only when deterministic checks cannot cover the quality risk.
+  - Store rubrics and task files separately from runtime logic.
+- Do not absorb:
+  - Benchmark runner, Docker agent harness, LLM-as-judge dependency, or domain task catalog.
+- Local landing positions:
+  - future roadmap: optional VLM/LLM review for generated images after deterministic checks pass.
+
 ### artryazanov/ai-illustrator
 
 - URL: <https://github.com/artryazanov/ai-illustrator>
@@ -139,6 +230,85 @@ Methods intentionally not adopted:
   - quality_checks: add reference-card usefulness and clean background checks where relevant.
   - future roadmap: series manifest and character catalog.
 
+### RishiDesai/CharForge
+
+- URL: <https://github.com/RishiDesai/CharForge>
+- Type: character consistency pipeline.
+- Relevance: medium.
+- Applicable stage: now as method reference, not implementation.
+- Absorb:
+  - Recurring characters benefit from a deliberate reference-card or character-sheet stage.
+  - Character references should exercise multiple views, expressions, and lighting conditions when the user needs long-run identity stability.
+  - Prompt optimization and quality checks should be separate from the generation backend.
+- Do not absorb:
+  - LoRA training, ComfyUI submodules, upscaling graph, captioning pipeline, or heavy hardware/API requirements.
+  - Scratch directory structure or model-training workflow.
+- Local landing positions:
+  - docs: recurring-character roadmap.
+  - quality checks: add reference-card usefulness checks without adding training features.
+
+### instantX-research/InstantID
+
+- URL: <https://github.com/instantX-research/InstantID>
+- Type: identity-preserving image generation method.
+- Relevance: medium.
+- Applicable stage: reference only.
+- Absorb:
+  - Identity fidelity and text editability are a tradeoff that should be stated explicitly.
+  - Single-image identity preservation is possible in some backends, but still needs strong prompt authority and visual checks.
+  - Non-realistic style identity preservation needs extra care because face, outfit, and background can blend.
+- Do not absorb:
+  - Model weights, ControlNet/IP-Adapter implementation, face embedding pipeline, or diffusers code.
+- Local landing positions:
+  - quality checks: keep identity lock ahead of style and scene.
+  - docs: treat identity/editability as a planning tradeoff, not a new runtime path.
+
+### AIDC-AI/Awesome-Multi-Image-Generation
+
+- URL: <https://github.com/AIDC-AI/Awesome-Multi-Image-Generation>
+- Type: curated multi-image generation research index.
+- Relevance: medium for roadmap.
+- Applicable stage: reference only.
+- Absorb:
+  - Multi-image consistency is a distinct problem from one-image polish.
+  - Character, semantic, temporal, and layout consistency should be named separately.
+  - Series/story workflows need continuity checks beyond a single prompt score.
+- Do not absorb:
+  - Research catalog content, paper taxonomy as project structure, or any listed method implementation.
+- Local landing positions:
+  - future roadmap: series manifests and continuity checks if this repo later expands beyond single-image output.
+
+### DesertPixelAi/ComfyUI-DP-Ideogram-Character
+
+- URL: <https://github.com/DesertPixelAi/ComfyUI-DP-Ideogram-Character>
+- Type: provider-specific character-reference ComfyUI node.
+- Relevance: medium-low.
+- Applicable stage: reference only.
+- Absorb:
+  - Prompt still needs explicit pose, setting, action, clothing, camera angle, and lighting even when a backend preserves facial features.
+  - Backend limitations should be documented instead of hidden.
+  - Download project-bound outputs instead of relying on expiring remote URLs.
+- Do not absorb:
+  - Ideogram API behavior, pricing, ComfyUI node code, style modes, speed modes, seed controls, or batch API behavior.
+- Local landing positions:
+  - SKILL.md: keep provider-switching off by default.
+  - output handling: project-bound generated images must be saved into the workspace.
+
+### fofr/cog-consistent-character
+
+- URL: <https://github.com/fofr/cog-consistent-character>
+- Type: consistent-character ComfyUI/Cog workflow.
+- Relevance: medium-low.
+- Applicable stage: reference only.
+- Absorb:
+  - Single-pose-per-run limitation as a useful warning for this repo's one-final-image contract.
+  - Clothing, expression, and background changes should remain controlled by text while identity remains locked.
+- Do not absorb:
+  - Cog, Replicate, ComfyUI, custom node, or hosted workflow behavior.
+  - Any external deployment or server setup.
+- Local landing positions:
+  - SKILL.md and quality checks: keep distinct variants as distinct generations.
+
 ### rockbenben/img-prompt
 
 - URL: <https://github.com/rockbenben/img-prompt>
@@ -156,6 +326,51 @@ Methods intentionally not adopted:
 - Local landing positions:
   - docs: add a compact `vocabulary.md`.
   - future roadmap: optional controlled vocabulary expansion if repeated user work shows demand.
+
+### xLegende/ComfyUI-Prompt-Formatter
+
+- URL: <https://github.com/xLegende/ComfyUI-Prompt-Formatter>
+- Type: prompt categorization / formatting node.
+- Relevance: medium.
+- Applicable stage: now for vocabulary organization, later for tooling if needed.
+- Absorb:
+  - Keep prompt vocabulary in small named categories.
+  - Treat unmatched or extra tags as reviewable leftovers rather than silently mixing them into the final prompt.
+  - Use template slots to maintain prompt order.
+- Do not absorb:
+  - ComfyUI custom node implementation.
+  - Random prompt generation, wildcard import, or large tag libraries.
+- Local landing positions:
+  - docs/vocabulary.md: keep compact categories.
+  - future roadmap: optional prompt lint that reports unmatched fields.
+
+### character-ai/prompt-poet
+
+- URL: <https://github.com/character-ai/prompt-poet>
+- Type: low-code prompt template library.
+- Relevance: medium for prompt structure.
+- Applicable stage: reference only.
+- Absorb:
+  - Named prompt parts make long prompts easier to inspect and trim.
+  - Validation should happen before prompt assembly, not after string concatenation.
+- Do not absorb:
+  - Jinja runtime, chat-message roles, truncation behavior, or package dependency.
+- Local landing positions:
+  - future compiler: named prompt parts if this repo grows a formal compiler.
+
+### google/dotprompt
+
+- URL: <https://github.com/google/dotprompt>
+- Type: executable prompt template format.
+- Relevance: medium for schema discipline.
+- Applicable stage: reference only.
+- Absorb:
+  - Keep model metadata, input schema, prompt body, and output contract conceptually separate.
+  - Treat templates as self-contained handoff artifacts when useful.
+- Do not absorb:
+  - Handlebars runtime, Genkit integration, provider-specific model settings, or executable template format.
+- Local landing positions:
+  - schemas/templates: preserve explicit input and output contracts without adding a new runtime.
 
 ### somacoffeekyoto/imgx-mcp
 

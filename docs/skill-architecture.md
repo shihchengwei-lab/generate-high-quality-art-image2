@@ -125,6 +125,23 @@ This is separate from runtime `execution_mode`:
 
 Do not rename or remove the runtime modes in this iteration.
 
+## Local Install Layer
+
+Codex discovers installed skills from the user skill directory. For this repo, the materialized installed copy should live at:
+
+```text
+C:\Users\kk789\.codex\skills\generate-high-quality-art-image2
+```
+
+Use `tools/sync_local_skill.ps1` to mirror only the runtime skill directory into that location. Do not install it as a `SKILL.md` file symlink; materialized files avoid current loader edge cases and make verification straightforward.
+
+The installed copy is intentionally smaller than the repo:
+
+- include: `SKILL.md`, `assets/`, `references/`, `scripts/`
+- exclude: root `docs/`, `templates/`, `schemas/`, `quality_checks/`, `examples/`, caches, and generated outputs
+
+After syncing, restart Codex before relying on the updated skill trigger text.
+
 ## Current Repo Structure
 
 ```text
