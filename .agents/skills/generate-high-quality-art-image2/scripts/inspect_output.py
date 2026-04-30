@@ -56,13 +56,19 @@ def main() -> None:
     if not job_dir.exists():
         raise SystemExit(f"Job dir not found: {job_dir}")
 
-    result_exists = (job_dir / "result.png").exists()
+    result_images = sorted(
+        path.name
+        for path in job_dir.glob("result.*")
+        if path.suffix.lower() in {".png", ".jpg", ".jpeg", ".webp"}
+    )
+    result_exists = bool(result_images)
 
     # Build a simple checklist template. Use a minimal set of items to remind the reviewer what to look for.
     checklist = [
         "# Quality Checklist",
         "",
         f"Result image exists: {result_exists}",
+        f"Result images: {', '.join(result_images) if result_images else 'none'}",
         "",
         "## Review items",
         "",

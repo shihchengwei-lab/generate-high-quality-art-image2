@@ -63,7 +63,7 @@ Behavior:
 - assemble the prompt
 - preserve reference roles
 - call the host-native image tool only when the user has asked to generate
-- do not call local image APIs
+- do not replace the host-native path with a different provider
 
 ## Runtime Execution Mode
 
@@ -82,6 +82,8 @@ debug_export_prompt: true
 ```
 
 These fields remain unchanged.
+
+For repo-local generation from a spec file, use runtime `execution_mode: direct` with `run_generation: true`. That path calls the OpenAI Images API from the local helper script.
 
 Use this distinction:
 

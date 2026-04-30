@@ -7,7 +7,7 @@ It has two layers:
 - Runtime skill: `.agents/skills/generate-high-quality-art-image2/`
 - Planning assets: root `docs/`, `templates/`, `schemas/`, `quality_checks/`, and `examples/`
 
-The runtime skill handles direct built-in Image 2.0 generation and debug prompt export. The root planning assets help an agent prepare, review, and hand off structured prompt briefs before generation.
+The runtime skill handles local direct image generation, host-native Codex generation guidance, and debug prompt export. The root planning assets help an agent prepare, review, and hand off structured prompt briefs before generation.
 
 ## What The Skill Does
 
@@ -73,6 +73,8 @@ Optional planning fields:
 
 - `mode`
 - `quality_mode`
+- `handoff_review`
+- `reuse_plan` for character sheets that will seed later scenes
 
 ## Prompt Assembly Layer
 
@@ -81,15 +83,17 @@ Prompt assembly must front-load identity and source authority before visual chan
 Use this order:
 
 1. Output contract and task type.
-2. `reference_lock`.
-3. `immutable_identity` or `character_identity`.
-4. `allowed_changes` and `conditional_overrides`.
-5. Task-specific structure.
-6. Composition, camera, action, scene, and lighting.
-7. Style, mood, look, and symbolic elements.
-8. `quality_checks`.
-9. `negative_prompt`.
-10. `output_format`.
+2. `handoff_review`.
+3. `reference_lock`.
+4. `immutable_identity` or `character_identity`.
+5. `reuse_plan` for character sheets, when present.
+6. `allowed_changes` and `conditional_overrides`.
+7. Task-specific structure.
+8. Composition, camera, action, scene, and lighting.
+9. Style, mood, look, and symbolic elements.
+10. `quality_checks`.
+11. `negative_prompt`.
+12. `output_format`.
 
 See `docs/prompt-assembly.md` for the detailed order.
 
@@ -116,7 +120,7 @@ The output depends on mode:
 
 - `prompt_only`: a structured prompt package or final prompt text.
 - `advisor`: a final prompt plus advice on missing references, quality risks, or how to use it elsewhere.
-- `host_native`: a final prompt prepared for the host agent's built-in image tool.
+- `host_native`: a final prompt prepared for the host agent's built-in image tool, when the user wants host-native generation.
 
 This is separate from runtime `execution_mode`:
 
@@ -180,7 +184,7 @@ Possible later work:
 Not this iteration:
 
 - no full MCP server
-- no local Image API integration
+- no alternate provider integration beyond the OpenAI Images API path used by the local script
 - no web UI
 - no prompt gallery import
 - no large vocabulary import

@@ -10,7 +10,14 @@ Use this template for one story-driven character illustration. The image must sh
 - intended_use:
 - output_count: one finished narrative illustration
 
-## 2. Reference Lock
+## 2. Handoff Review
+
+- assumptions:
+- missing_inputs:
+- risk_flags:
+- next_review_step:
+
+## 3. Reference Lock
 
 - reference_lock:
   - identity_source:
@@ -18,7 +25,7 @@ Use this template for one story-driven character illustration. The image must sh
   - scene_source:
   - lighting_source:
 
-## 3. Immutable Identity
+## 4. Immutable Identity
 
 - face:
 - facial_proportions:
@@ -28,7 +35,7 @@ Use this template for one story-driven character illustration. The image must sh
 - temperament:
 - recognizable_traits:
 
-## 4. Story Context
+## 5. Story Context
 
 - story_context:
 - action_now:
@@ -36,7 +43,7 @@ Use this template for one story-driven character illustration. The image must sh
 - subject:
 - scene_state:
 
-## 5. Camera Language
+## 6. Camera Language
 
 - shot_type:
 - distance:
@@ -44,7 +51,7 @@ Use this template for one story-driven character illustration. The image must sh
 - focus:
 - composition:
 
-## 6. Lighting Logic
+## 7. Lighting Logic
 
 - primary_light_source:
 - secondary_light_source:
@@ -52,13 +59,13 @@ Use this template for one story-driven character illustration. The image must sh
 - mood:
 - consistency_rules:
 
-## 7. Symbolic Effects
+## 8. Symbolic Effects
 
 - symbolic_elements:
 - effect_scale:
 - effect_priority:
 
-## 8. Scene
+## 9. Scene
 
 - location:
 - time:
@@ -66,7 +73,7 @@ Use this template for one story-driven character illustration. The image must sh
 - atmosphere:
 - narrative_background_elements:
 
-## 9. Pose / Action
+## 10. Pose / Action
 
 - pose:
 - body_action:
@@ -74,14 +81,14 @@ Use this template for one story-driven character illustration. The image must sh
 - gaze:
 - interaction_with_scene:
 
-## 10. Style
+## 11. Style
 
 - rendering:
 - palette:
 - detail_density:
 - project_fit:
 
-## 11. Quality Checks
+## 12. Quality Checks
 
 - The image contains a visible event happening now.
 - The image does not become a landscape-only image.
@@ -93,7 +100,7 @@ Use this template for one story-driven character illustration. The image must sh
 - Background elements serve the story and do not become clutter.
 - Identity remains stable under lighting and atmosphere changes.
 
-## 12. Negative Prompt
+## 13. Negative Prompt
 
 - no identity drift
 - no empty landscape
@@ -104,7 +111,7 @@ Use this template for one story-driven character illustration. The image must sh
 - no random text, logo, watermark, or glyphs
 - no multi-panel layout
 
-## 13. Output Format
+## 14. Output Format
 
 - aspect_ratio:
 - resolution_hint:

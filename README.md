@@ -65,7 +65,7 @@ For Codex / Agent use:
 4. Use `docs/prompt-assembly.md` to assemble the final prompt.
 5. Review the matching file in `quality_checks/`.
 
-For ordinary image generation, use the installed skill or `.agents/skills/generate-high-quality-art-image2/SKILL.md`; the normal path remains Codex built-in Image 2.0 generation.
+For ordinary repo-driven image generation, use `generate_direct.py` through the installed skill or `.agents/skills/generate-high-quality-art-image2/SKILL.md`. Host-native Codex image generation remains available when references are already in the conversation and the user expects an inline result.
 
 ### Core template families
 
@@ -79,6 +79,8 @@ Use `character_locked_scene` when the same person must remain recognizable and o
 
 Use `character_sheet` when creating a stable character reference sheet:
 
+- recurring-scene reuse plan
+- stable identity anchor
 - front view
 - side or 3/4 view
 - back view
@@ -116,7 +118,13 @@ Root templates may include:
 ```json
 {
   "mode": "host_native",
-  "quality_mode": "standard"
+  "quality_mode": "standard",
+  "handoff_review": {
+    "assumptions": [],
+    "missing_inputs": [],
+    "risk_flags": [],
+    "next_review_step": ""
+  }
 }
 ```
 
@@ -132,6 +140,8 @@ Root templates may include:
 - `standard`
 - `high_fidelity`
 - `character_lock_strict`
+
+`handoff_review` keeps uncertainty visible during agent handoff. Use it for assumptions, missing inputs, risk flags, and the next review step instead of inventing details.
 
 These are planning fields. They do not replace `execution_mode: direct/debug` in the existing helper scripts.
 
@@ -214,6 +224,7 @@ Image B must not take over the environment. User text always wins for scene, lig
 ## Direct mode
 
 Direct mode is the default.
+When `run_generation: true` and the command is not a dry run, the local script calls the OpenAI Images API directly. With reference images, it uses the image edit endpoint so Image A and Image B can guide the result.
 
 ```yaml
 execution_mode: "direct"
@@ -233,12 +244,12 @@ Direct mode writes:
 
 - `generation_settings.json`
 - `direct_generation_summary.md`
-- `result.png` when the Image API is actually called
-- `generation_result.json` when generation succeeds
+- `result.<format>` when local generation succeeds
+- `generation_result.json` when local generation succeeds
 
 Direct mode does not write `final_prompt.txt` unless debug export is enabled.
 
-For local validation without calling the Image API:
+For local validation without any generation attempt, add `--dry-run`:
 
 ```bash
 python .agents/skills/generate-high-quality-art-image2/scripts/generate_direct.py \
@@ -322,4 +333,4 @@ Expected behavior:
 pip install -r requirements.txt
 ```
 
-Real image generation requires a configured OpenAI SDK environment and API credentials.
+Local direct generation requires the OpenAI SDK from `requirements.txt` and API credentials available in the environment.

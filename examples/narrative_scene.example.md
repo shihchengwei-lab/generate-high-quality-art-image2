@@ -11,6 +11,12 @@ Create a story illustration of a sacred healer discovering a broken shrine seal 
   "task_type": "narrative_scene",
   "mode": "host_native",
   "quality_mode": "standard",
+  "handoff_review": {
+    "assumptions": ["the healer reference identity is already available"],
+    "missing_inputs": [],
+    "risk_flags": ["symbolic effects may cover the hand action"],
+    "next_review_step": "verify the visible event, reaching hand, and lighting hierarchy"
+  },
   "reference_lock": true,
   "immutable_identity": {
     "face": "same sacred healer face",

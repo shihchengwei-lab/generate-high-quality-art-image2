@@ -33,6 +33,16 @@ def validate_spec(spec: dict[str, Any]) -> None:
             raise SystemExit(f"{key} is required.")
 
 
+def resolve_reference_paths(spec: dict[str, Any], spec_path: Path) -> list[Path]:
+    resolved: list[Path] = []
+    for ref in spec.get("reference_images", []):
+        ref_path = Path(str(ref.get("path", "")))
+        if not ref_path.is_absolute():
+            ref_path = (spec_path.parent / ref_path).resolve()
+        resolved.append(ref_path)
+    return resolved
+
+
 def build_reference_text(spec: dict[str, Any]) -> str:
     from lib.reference_roles import reference_priority_block
 
@@ -74,7 +84,8 @@ def main() -> None:
     parser.set_defaults(score=True)
     args = parser.parse_args()
 
-    spec = apply_reference_defaults(load_yaml(Path(args.spec)))
+    spec_path = Path(args.spec)
+    spec = apply_reference_defaults(load_yaml(spec_path))
     validate_spec(spec)
 
     out_dir = make_output_dir(Path(args.out), str(spec["asset_name"]))
@@ -84,6 +95,7 @@ def main() -> None:
     negative_prompt = render_negative_prompt(negative_blocks)
     reference_interpretation = build_reference_interpretation(spec)
     generation_settings = build_generation_settings(spec)
+    generation_settings["resolved_reference_paths"] = [str(path) for path in resolve_reference_paths(spec, spec_path)]
 
     write_prompt_package(
         out_dir=out_dir,
@@ -98,7 +110,7 @@ def main() -> None:
         write_score_files(out_dir, final_prompt, generation_settings, negative_prompt, reference_interpretation)
 
     print(f"Debug prompt package created: {out_dir}")
-    print("Default user workflow is Codex built-in image_gen. This prompt package is for debug/review only.")
+    print("Default repo workflow is local direct generation. This prompt package is for debug/review only.")
 
 
 if __name__ == "__main__":

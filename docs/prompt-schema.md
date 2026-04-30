@@ -11,14 +11,16 @@ The schema is method-driven, not gallery-driven. It borrows structural ideas fro
 When assembling a final prompt, use this order:
 
 1. Output type and task type.
-2. Reference lock and immutable identity.
-3. Allowed changes and conditional overrides.
-4. Forbidden changes.
-5. Subject appearance, attire, and accessories.
-6. Pose, composition, scene, story context, camera language, and lighting.
-7. Style and symbolic elements.
-8. Quality checks.
-9. Negative prompt and output format.
+2. Handoff review.
+3. Reference lock and immutable identity.
+4. Reuse plan for `character_sheet`, when present.
+5. Allowed changes and conditional overrides.
+6. Forbidden changes.
+7. Subject appearance, attire, and accessories.
+8. Pose, composition, scene, story context, camera language, and lighting.
+9. Style and symbolic elements.
+10. Quality checks.
+11. Negative prompt and output format.
 
 Identity rules must appear before visual variation rules.
 
@@ -29,7 +31,7 @@ See `docs/prompt-assembly.md` for the full assembly contract.
 Use these methods as field-design guidance:
 
 - Official image prompting and `input_fidelity`: preserve important reference details, describe the complete desired output, and separate unchanged identity from requested edits.
-- Skill mode design: distinguish prompt-only planning, host-native generation, and advisor handoff instead of treating every environment as local API generation.
+- Skill mode design: distinguish prompt-only planning, local direct generation, host-native generation, and advisor handoff instead of assuming every environment uses the same generation path.
 - Identity vs motion/action separation: keep static identity descriptors separate from pose, camera, and action language when strict character consistency matters.
 - Prompt decomposition: keep subject, camera, action, look, scene, lighting, quality checks, and output format in separate fields.
 - Quality presets: use `quality_mode` as planning language for how strict the prompt and checks should be.
@@ -59,12 +61,26 @@ Use these methods as field-design guidance:
 - Example: `character_lock_strict`.
 - Common mistakes: assuming this changes Image API parameters. In this iteration it is only a planning and quality-check hint.
 
+### `handoff_review`
+
+- Purpose: records assumptions, missing inputs, risk flags, and the next review step.
+- Required: optional; recommended when a prompt brief will be handed to another agent or used later.
+- Example: missing shoe instruction, risk of Image B background takeover, next step is inspect reference images.
+- Common mistakes: hiding uncertainty by inventing details or leaving known risks only in prose outside the structured brief.
+
 ### `reference_lock`
 
 - Purpose: defines which reference or text source controls identity, pose, scene, and lighting.
 - Required: yes for reference-driven character tasks.
 - Example: `Image A controls identity; Image B controls pose only; user text controls scene and lighting.`
 - Common mistakes: letting a pose reference also control background, lighting, costume, or identity.
+
+### `reuse_plan`
+
+- Purpose: states whether a character sheet will become a reusable reference card for later scenes.
+- Required: optional; recommended for `character_sheet`.
+- Example: stable front-view identity anchor, optional expression variation, no costume-structure variation.
+- Common mistakes: adding expression, lighting, or action panels without saying what they are allowed to vary.
 
 ### `immutable_identity`
 

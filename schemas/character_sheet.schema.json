@@ -29,6 +29,25 @@
       "enum": ["draft", "standard", "high_fidelity", "character_lock_strict"],
       "description": "Planning hint for fidelity and quality checks; does not change runtime API behavior."
     },
+    "handoff_review": {
+      "type": "object",
+      "description": "Agent handoff notes for assumptions, missing inputs, risk flags, and the next review step.",
+      "properties": {
+        "assumptions": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "missing_inputs": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "risk_flags": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "next_review_step": { "type": "string" }
+      }
+    },
     "reference_lock": {
       "type": ["boolean", "object"],
       "description": "Whether the character sheet preserves a supplied reference identity."
@@ -44,6 +63,22 @@
         "age_impression": { "type": "string" },
         "temperament": { "type": "string" },
         "recognizable_traits": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "reuse_plan": {
+      "type": "object",
+      "description": "Whether the sheet is a reusable reference card for later scenes, and which panel is the stable identity anchor.",
+      "properties": {
+        "will_seed_later_scenes": { "type": "boolean" },
+        "identity_anchor": { "type": "string" },
+        "optional_variation_panels": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "forbidden_variation": {
           "type": "array",
           "items": { "type": "string" }
         }
