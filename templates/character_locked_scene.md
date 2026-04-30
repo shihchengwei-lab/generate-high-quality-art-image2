@@ -10,7 +10,14 @@ Use this template when the same character must be preserved while only selected 
 - intended_use:
 - output_count: one finished illustration
 
-## 2. Reference Lock
+## 2. Handoff Review
+
+- assumptions:
+- missing_inputs:
+- risk_flags:
+- next_review_step:
+
+## 3. Reference Lock
 
 - reference_lock:
   - identity_source:
@@ -19,7 +26,7 @@ Use this template when the same character must be preserved while only selected 
   - lighting_source:
 - priority_rule: identity rules are applied before attire, pose, scene, and lighting.
 
-## 3. Immutable Identity
+## 4. Immutable Identity
 
 - face:
 - facial_proportions:
@@ -30,7 +37,7 @@ Use this template when the same character must be preserved while only selected 
 - temperament:
 - recognizable_traits:
 
-## 4. Allowed Changes
+## 5. Allowed Changes
 
 - attire:
 - accessories:
@@ -39,7 +46,7 @@ Use this template when the same character must be preserved while only selected 
 - lighting:
 - hairstyle:
 
-## 5. Conditional Overrides
+## 6. Conditional Overrides
 
 List allowed exceptions that replace a reference detail only under a clear condition.
 
@@ -47,7 +54,7 @@ List allowed exceptions that replace a reference detail only under a clear condi
 - override:
 - reason:
 
-## 6. Forbidden Changes
+## 7. Forbidden Changes
 
 - do not change face identity
 - do not change facial proportions
@@ -55,7 +62,7 @@ List allowed exceptions that replace a reference detail only under a clear condi
 - do not change body proportion
 - do not move fixed accessories unless explicitly allowed
 
-## 7. Composition
+## 8. Composition
 
 - framing:
 - camera:
@@ -63,19 +70,19 @@ List allowed exceptions that replace a reference detail only under a clear condi
 - subject_placement:
 - crop_rule:
 
-## 8. Pose
+## 9. Pose
 
 - body_gesture:
 - hand_position:
 - foot_position:
 - action:
 
-## 9. Expression
+## 10. Expression
 
 - expression:
 - emotional_state:
 
-## 10. Attire / Accessories
+## 11. Attire / Accessories
 
 - attire:
 - footwear:
@@ -83,7 +90,7 @@ List allowed exceptions that replace a reference detail only under a clear condi
 - accessories:
 - fixed_positions:
 
-## 11. Scene
+## 12. Scene
 
 - location:
 - time:
@@ -91,7 +98,7 @@ List allowed exceptions that replace a reference detail only under a clear condi
 - background_role:
 - scene_must_not_override_identity: true
 
-## 12. Lighting
+## 13. Lighting
 
 - primary_light_source:
 - direction:
@@ -99,19 +106,19 @@ List allowed exceptions that replace a reference detail only under a clear condi
 - secondary_light_source:
 - consistency_rule:
 
-## 13. Mood / Narrative State
+## 14. Mood / Narrative State
 
 - story_moment:
 - emotional_core:
 
-## 14. Style
+## 15. Style
 
 - rendering:
 - palette:
 - detail_density:
 - project_fit:
 
-## 15. Quality Checks
+## 16. Quality Checks
 
 - Same face identity as the reference.
 - Facial proportions do not drift.
@@ -126,7 +133,7 @@ List allowed exceptions that replace a reference detail only under a clear condi
 - Light direction is coherent.
 - Background supports the character and does not take over.
 
-## 16. Negative Prompt
+## 17. Negative Prompt
 
 - no identity drift
 - no face replacement
@@ -140,7 +147,7 @@ List allowed exceptions that replace a reference detail only under a clear condi
 - no multi-panel layout
 - no labels, logos, or random text
 
-## 17. Output Format
+## 18. Output Format
 
 - aspect_ratio:
 - resolution_hint:

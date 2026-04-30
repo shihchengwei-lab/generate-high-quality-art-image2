@@ -50,7 +50,7 @@ Methods intentionally not adopted:
   - Preserve/change-only style instructions for controlled edits.
   - Multi-image input caution: the first image may need to carry the most identity-critical information.
 - Do not absorb:
-  - API implementation details into this skill runtime.
+  - unrelated API examples or cookbook prompt content.
   - Cookbook demo prompts or images.
   - Product, logo, or marketing examples as project templates.
 - Local landing positions:
@@ -59,7 +59,7 @@ Methods intentionally not adopted:
   - templates: keep `reference_lock`, `immutable_identity`, and `allowed_changes` near the front.
   - schemas: expose `quality_mode` for planning only.
   - quality_checks: include face, outfit, accessory, and lighting preservation checks.
-  - future roadmap: consider an optional runtime mapping only if this repo later grows an API-backed path.
+  - runtime: map local direct generation to Images generate/edit without importing cookbook demo prompts.
 
 ### openai/codex imagegen sample skill
 
@@ -78,7 +78,7 @@ Methods intentionally not adopted:
   - Any fallback script implementation.
 - Local landing positions:
   - SKILL.md: strengthen output handling and revision discipline.
-  - implementation notes: keep local scripts as validation/debug helpers only.
+  - implementation notes: keep built-in generation as host-native behavior, separate from local API generation.
 
 ### openai/skills
 
@@ -490,7 +490,7 @@ P2 repos are useful for roadmap design. P3 repos are only weak references for or
 
 Keep two layers clear:
 
-- `.agents/skills/generate-high-quality-art-image2/`: runtime skill for direct built-in Image 2.0 generation and debug prompt export.
+- `.agents/skills/generate-high-quality-art-image2/`: runtime skill for local direct OpenAI Images API generation, host-native generation guidance, and debug prompt export.
 - Root `docs/`, `templates/`, `schemas/`, `quality_checks/`, and `examples/`: planning, handoff, review, and future compiler assets.
 
 The repo should lead a Codex/Agent user from README to docs, then to a selected template family, then to quality checks. It should not lead with a gallery.
@@ -501,7 +501,155 @@ The repo should lead a Codex/Agent user from README to docs, then to a selected 
 - `character_sheet`: reference-card thinking, clean layout constraints, panel consistency checks, and stable accessory positions.
 - `narrative_scene`: action-first story structure, camera/action/look decomposition, active event checks, and lighting hierarchy.
 
-## This-Round Landing Plan
+## 2026-05-01 Three-Round Review
+
+This review used public repos as method references only. It did not import third-party prompts, images, UI layouts, gallery examples, or provider-specific workflow code.
+
+### Round 1: Skill And Prompt Package Shape
+
+Reviewed:
+
+- `openai/codex` imagegen sample skill
+- `openai/skills` skill-creator guidance
+- `google/dotprompt`
+- `xcaeser/image-json-gen`
+
+Adopt:
+
+- keep the built-in image tool as a host-native path while preserving local direct generation
+- keep `SKILL.md` procedural and put detailed references in docs or `references/`
+- keep structured fields and schema-level validation lightweight
+
+Reject:
+
+- adding a prompt-template runtime dependency
+- adding unrelated provider backends as default paths
+- adding a broad prompt-pack format that is not used by this repo
+
+### Round 2: Character Consistency And Reference Cards
+
+Reviewed:
+
+- `RishiDesai/CharForge`
+- `gomcpgo/replicate_image_ai`
+- related identity-preserving image/video repos
+
+Adopt:
+
+- add a `reuse_plan` concept for `character_sheet`
+- require a stable identity anchor when a sheet will seed later scenes
+- allow expression, lighting, or action variation panels only when they serve later reuse
+
+Reject:
+
+- LoRA training, ComfyUI graph execution, provider-specific character-reference APIs, and batch backends
+- making expression or lighting variation mandatory for every character sheet
+
+### Round 3: Prompt Evaluation And First-Principles Pruning
+
+Reviewed:
+
+- `promptfoo/promptfoo`
+- `Siddhesh2377/structured-prompt-builder`
+- `alasano/gpt-image-playground`
+- GPT-Image-2 prompt gallery repos
+
+Adopt:
+
+- keep prompts and checks reviewable as structured artifacts
+- preserve local deterministic tests before optional external evaluation
+- add a necessity gate: each rule or field must preserve identity/source authority, capture a requested change, prevent a known failure, or create a reviewable acceptance check
+
+Reject:
+
+- required promptfoo dependency, VLM judging, browser UI, gallery import, cost/history tracking, or commercial prompt examples
+- any source whose only value is a collection of example prompts
+
+Implemented in this pass:
+
+- added the instruction necessity gate to design and prompt assembly docs
+- added `reuse_plan` to `character_sheet` templates, schema, example, and quality checks
+- strengthened the runtime skill's edit-target and constraint-pruning guidance
+
+## 2026-05-01 Five-Loop Review
+
+This pass ran five loops. Each loop used three public-repo search rounds, then applied the same first-principles gate:
+
+```text
+Does this need to exist?
+```
+
+### Loop 1: Skill Packaging And Loader Behavior
+
+Reviewed:
+
+- `openai/codex` skill loader issue and imagegen sample
+- public Codex skill library examples
+- public Codex settings and skill installation repos
+
+Decision:
+
+- Keep the materialized install workflow and restart guidance.
+- Do not add symlink install behavior, extra skill managers, or cross-agent wrappers.
+- No code change needed beyond preserving the current sync script path.
+
+### Loop 2: Structured Prompt Shape
+
+Reviewed:
+
+- `NeuralSamurAI/ComfyUI-PromptJSON`
+- `pauhu/gemini-image-prompting-handbook`
+- `xcaeser/image-json-gen`
+
+Decision:
+
+- Keep separated fields for subject, scene, composition, camera, lighting, quality, and negative prompt.
+- Add only a lightweight `handoff_review` field, because it prevents invisible assumptions during agent handoff.
+- Do not add a ComfyUI node, provider-specific schema, TypeScript interface, or serialization dependency.
+
+### Loop 3: Image Output, Edit, And Session Handling
+
+Reviewed:
+
+- `alasano/gpt-image-playground`
+- `spartanz51/imagegen-mcp`
+- `naporin0624/gpt-image-1-mcp`
+
+Decision:
+
+- Keep project-bound output handling guidance and edit-target visibility guidance.
+- Do not add MCP, mask tooling, cost tracking, gallery UI, session database behavior, or provider backends beyond the local OpenAI Images API path.
+- The only relevant method is making assumptions and risk flags explicit before handoff.
+
+### Loop 4: Character Consistency Across Scenes
+
+Reviewed:
+
+- `DesertPixelAi/ComfyUI-DP-Ideogram-Character`
+- `RishiDesai/CharForge`
+- multi-shot and character-reference workflow repos
+
+Decision:
+
+- Keep `reuse_plan` for character sheets and require a stable identity anchor for recurring scenes.
+- Do not add character-reference API IDs, LoRA training, batch generation backend, or video timeline logic.
+- Treat series continuity as a future extension, not current runtime scope.
+
+### Loop 5: Prompt Evaluation And Versioning
+
+Reviewed:
+
+- `promptfoo/promptfoo`
+- `microsoft/promptpex`
+- GitHub prompt-file docs and prompt versioning repos
+
+Decision:
+
+- Preserve deterministic local tests and add a small template-contract test.
+- Do not add promptfoo, PromptPex, Git hooks, semantic prompt versioning, `.prompt.yml`, or LLM/VLM judging.
+- Use `handoff_review` plus tests as the minimum useful prompt-management improvement.
+
+## Previous Landing Plan
 
 Implement now:
 

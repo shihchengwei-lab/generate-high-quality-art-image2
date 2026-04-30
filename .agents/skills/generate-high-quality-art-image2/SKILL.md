@@ -1,13 +1,13 @@
 ---
 name: generate-high-quality-art-image2
-description: Generate production-quality single-image game art, deity illustrations, character cards, story illustrations, key visuals, and promotional artwork using Codex built-in Image 2.0 generation, not local API calls. Use for reference-driven direct generation where Image A controls identity, Image B controls pose/composition, and user text controls scene, lighting, atmosphere, time, effects, and story moment. Do not use for sprite sheets, animation frames, tilemaps, transparent-background game assets, UI icon batches, collision data, asset slicing, or game-engine integration.
+description: Generate production-quality single-image game art, deity illustrations, character cards, story illustrations, key visuals, and promotional artwork using local OpenAI Images API generation or Codex built-in Image 2.0 when appropriate. Use for reference-driven direct generation where Image A controls identity, Image B controls pose/composition, and user text controls scene, lighting, atmosphere, time, effects, and story moment. Do not use for sprite sheets, animation frames, tilemaps, transparent-background game assets, UI icon batches, collision data, asset slicing, or game-engine integration.
 ---
 
 # Generate High Quality Art with Image 2.0
 
 ## Purpose
 
-This skill creates high-quality single-image art using Codex's built-in Image 2.0 image generation tool.
+This skill creates high-quality single-image art using local OpenAI Images API generation by default for repo workflows, with Codex's built-in Image 2.0 image generation tool as a host-native option when the image context is already in the conversation.
 
 It supports:
 
@@ -15,7 +15,8 @@ It supports:
 - one or two reference images
 - strict reference role assignment
 - same-character variation prompts where identity is locked and only attire, scene, or pose changes
-- direct generation by default through the built-in `image_gen` tool
+- direct local generation by default through `scripts/generate_direct.py`
+- host-native generation through the built-in `image_gen` tool when appropriate
 - debug-only prompt export
 - automatic negative prompt module selection
 - rule-based prompt scoring in debug mode
@@ -44,7 +45,7 @@ Root template `mode` is a planning concept. It does not replace runtime `executi
 
 ## Default behavior
 
-Default mode is direct generation through Codex built-in Image 2.0.
+Default mode is local direct generation through the OpenAI Images API when `run_generation: true`.
 
 ```yaml
 execution_mode: "direct"
@@ -53,18 +54,19 @@ debug_export_prompt: false
 
 For normal user work:
 
-- Do call the built-in `image_gen` tool directly.
-- Do not call image-generation APIs from local scripts.
-- Do not require or ask for `OPENAI_API_KEY`.
+- Do use `generate_direct.py` for local repo generation when a spec file and local references are available.
+- Do call the built-in `image_gen` tool directly when reference images are already attached in the conversation and the user expects host-native generation.
+- Local direct generation requires the OpenAI SDK and normal API credentials from the environment.
 - Do not ask the user to manually transfer `final_prompt.txt` unless they explicitly request debug output.
 - If reference images are local files and not already attached in the thread, inspect/open them first so the built-in generator has the visual context, then refer to them as Image A and Image B in the `image_gen` prompt.
 - Treat input images as references unless the user explicitly asks to edit an existing image.
-- Do not silently switch from the built-in path to local API, CLI, ComfyUI, LoRA, or other provider workflows.
-- If the user asks for multiple distinct assets or variants, make one built-in generation call per distinct final image instead of merging unrelated deliverables into one prompt.
+- If the user asks to modify an existing image, make sure that image is visible in the conversation context before treating it as an edit target.
+- Do not silently switch from the local Images API / built-in path to ComfyUI, LoRA, or other provider workflows.
+- If the user asks for multiple distinct assets or variants, make one generation call per distinct final image instead of merging unrelated deliverables into one prompt.
 
 ## Output handling
 
-The built-in generator may save images outside this repository by default.
+Local direct generation writes into the selected output directory. The built-in generator may save images outside this repository by default.
 
 Use this priority:
 
@@ -84,7 +86,9 @@ When revising a generated result:
 - Preserve immutable identity before adjusting pose, attire, scene, lighting, or effects.
 - Do not add new style systems, providers, or pipeline steps just because one output failed.
 
-The final prompt sent to `image_gen` must include:
+When adding or revising constraints, keep only rules that preserve identity/source authority, capture the requested change, prevent a known failure, or create a reviewable output check. Delete or merge decorative and redundant instructions.
+
+The final prompt sent to local generation or `image_gen` must include:
 
 - the reference authority block
 - the character consistency lock block
@@ -94,14 +98,15 @@ The final prompt sent to `image_gen` must include:
 - anti-Image-B-background-takeover constraints
 - selected negative constraints when relevant
 
-Use helper scripts only for validation or debug prompt packages:
+Use helper scripts for local direct generation, validation, or debug prompt packages:
 
 ```bash
+python .agents/skills/generate-high-quality-art-image2/scripts/generate_direct.py --spec <spec.yaml>
 python .agents/skills/generate-high-quality-art-image2/scripts/generate_direct.py --spec <spec.yaml> --dry-run
 python .agents/skills/generate-high-quality-art-image2/scripts/build_prompt.py --spec <spec.yaml>
 ```
 
-Do not run `generate_direct.py` without `--dry-run` as the primary generation path. Local scripts cannot invoke Codex's built-in image generation tool.
+Run `generate_direct.py` without `--dry-run` only when `run_generation: true` and the local environment has valid OpenAI API credentials.
 
 ## Reference image rules
 
@@ -210,12 +215,14 @@ Always include the following internal constraints:
 
 ## Output files
 
-Built-in direct generation writes the final image through Codex's normal generated-image output location.
+Local direct generation writes into the selected output job directory.
 
-Dry-run / debug helper scripts may write:
+Direct mode writes:
 
 - `generation_settings.json`
 - `direct_generation_summary.md`
+- `result.<format>` when local generation succeeds
+- `generation_result.json` when local generation succeeds
 
 Debug mode additionally writes:
 
@@ -229,7 +236,7 @@ Debug mode additionally writes:
 
 ## Quality workflow
 
-Use built-in direct generation for normal user work. Use debug mode only when diagnosing reference-role drift, sheet-layout takeover, or Image B background takeover.
+Use local direct generation for spec-driven repo work. Use built-in generation when the host conversation already contains the image references and the user expects an inline result. Use debug mode when diagnosing reference-role drift, sheet-layout takeover, or Image B background takeover.
 
 Quality checks must cover:
 

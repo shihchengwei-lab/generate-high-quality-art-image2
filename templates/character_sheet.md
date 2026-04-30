@@ -10,7 +10,14 @@ Use this template for character setting art, three-view sheets, and detail callo
 - intended_use:
 - output_count: one character sheet image
 
-## 2. Reference Lock
+## 2. Handoff Review
+
+- assumptions:
+- missing_inputs:
+- risk_flags:
+- next_review_step:
+
+## 3. Reference Lock
 
 - reference_lock:
   - identity_source:
@@ -18,7 +25,7 @@ Use this template for character setting art, three-view sheets, and detail callo
   - pose_source:
 - priority_rule: all panels must describe the same character.
 
-## 3. Character Identity
+## 4. Character Identity
 
 - face:
 - facial_proportions:
@@ -28,7 +35,14 @@ Use this template for character setting art, three-view sheets, and detail callo
 - temperament:
 - recognizable_traits:
 
-## 4. Outfit Definition
+## 5. Reuse Plan
+
+- will_seed_later_scenes:
+- identity_anchor:
+- optional_variation_panels:
+- forbidden_variation:
+
+## 6. Outfit Definition
 
 - base_outfit:
 - color_palette:
@@ -37,7 +51,7 @@ Use this template for character setting art, three-view sheets, and detail callo
 - footwear:
 - fixed_accessories:
 
-## 5. Layout
+## 7. Layout
 
 - canvas_ratio:
 - panel_count:
@@ -51,7 +65,7 @@ Use this template for character setting art, three-view sheets, and detail callo
 - spacing:
 - labeling:
 
-## 6. Panel Requirements
+## 8. Panel Requirements
 
 - front_view:
 - side_or_3quarter_view:
@@ -60,7 +74,7 @@ Use this template for character setting art, three-view sheets, and detail callo
 - costume_detail:
 - accessory_detail:
 
-## 7. Sheet Constraints
+## 9. Sheet Constraints
 
 - clean background
 - clear panel boundaries
@@ -69,15 +83,18 @@ Use this template for character setting art, three-view sheets, and detail callo
 - no unrelated scene background
 - no logo or decorative text
 
-## 8. Style
+## 10. Style
 
 - rendering:
 - line_finish:
 - color_finish:
 - detail_density:
 
-## 9. Quality Checks
+## 11. Quality Checks
 
+- If the sheet will seed later scenes, it includes one stable identity anchor with unobstructed face and hair.
+- Optional expression, lighting, or action variation panels are included only when they support later reuse.
+- Variation panels do not replace required front, side or 3/4, back, face, costume, and accessory views.
 - Front, side or 3/4, and back views show the same character.
 - Clothing color, cut, and pattern stay consistent across views.
 - Accessories keep the same size, side, and position.
@@ -89,7 +106,7 @@ Use this template for character setting art, three-view sheets, and detail callo
 - No extra text, logo, watermark, or fake labels.
 - Fixed accessory positions are correct.
 
-## 10. Negative Prompt
+## 12. Negative Prompt
 
 - no identity drift between panels
 - no inconsistent costume colors
@@ -99,7 +116,7 @@ Use this template for character setting art, three-view sheets, and detail callo
 - no unreadable labels
 - no logo or watermark
 
-## 11. Output Format
+## 13. Output Format
 
 - aspect_ratio:
 - resolution_hint:

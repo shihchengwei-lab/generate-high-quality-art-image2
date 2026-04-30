@@ -15,6 +15,12 @@ Use their lightweight lessons only:
 - Keep model metadata, input contract, prompt body, quality checks, and output contract conceptually separate.
 - Treat unused or unmatched fields as review signals instead of silently appending them to the final prompt.
 
+Apply a necessity gate before adding any named part:
+
+- Keep the part if it preserves identity, routes source authority, captures a requested change, prevents a known failure, or creates a reviewable output check.
+- Omit the part if it only repeats another instruction, adds unused provider syntax, or expands the prompt beyond the selected task type.
+- Prefer a missing-field note over filling weak defaults when the answer is not known.
+
 ## Core Rule
 
 Identity and source authority come before creative variation.
@@ -41,7 +47,18 @@ Include:
 - `quality_mode`
 - `output_format`
 
-### 2. Reference Lock
+### 2. Handoff Review
+
+Record what is not yet certain before building the final prompt:
+
+- assumptions
+- missing inputs
+- risk flags
+- next review step
+
+Do not fill missing visual facts with invented detail. Use this section to keep uncertainty visible to the next agent or reviewer.
+
+### 3. Reference Lock
 
 Define source authority before describing the image:
 
@@ -56,7 +73,7 @@ For the normal two-reference workflow:
 Image A controls identity. Image B controls pose and composition only. User text controls scene, lighting, atmosphere, time, effects, and story moment.
 ```
 
-### 3. Immutable Identity
+### 4. Immutable Identity
 
 List the traits that must not change:
 
@@ -71,7 +88,7 @@ List the traits that must not change:
 
 For a character sheet, use `character_identity`. For character-locked scenes and narrative scenes, use `immutable_identity`.
 
-### 4. Allowed Changes And Conditional Overrides
+### 5. Allowed Changes And Conditional Overrides
 
 List only the items that may change:
 
@@ -92,7 +109,7 @@ Example:
 If the scene requires practical travel footwear, replace the reference sandals with soft black boots. Do not change the face, age impression, body proportion, or pendant position.
 ```
 
-### 5. Task-Specific Structure
+### 6. Task-Specific Structure
 
 Add the structure required by the selected task.
 
@@ -109,6 +126,7 @@ For `character_locked_scene`:
 For `character_sheet`:
 
 - character identity
+- reuse plan
 - outfit definition
 - layout
 - panel requirements
@@ -126,7 +144,7 @@ For `narrative_scene`:
 - lighting logic
 - symbolic effects
 
-### 6. Composition, Camera, Action, Scene, And Lighting
+### 7. Composition, Camera, Action, Scene, And Lighting
 
 Use concrete language:
 
@@ -142,7 +160,7 @@ Avoid conflicting instructions:
 - sunrise and moonlight without hierarchy
 - static standing pose when `action_now` requires movement
 
-### 7. Style, Look, Mood, And Symbolic Elements
+### 8. Style, Look, Mood, And Symbolic Elements
 
 Add finish and mood after structure:
 
@@ -154,7 +172,7 @@ Add finish and mood after structure:
 
 Symbolic effects must support the subject and story. They must not cover the face, hands, or key action.
 
-### 8. Quality Checks
+### 9. Quality Checks
 
 Quality checks should be reviewable after generation:
 
@@ -169,7 +187,7 @@ Quality checks should be reviewable after generation:
 - visible event happening now
 - panel layout clear
 
-### 9. Negative Prompt
+### 10. Negative Prompt
 
 Use negative prompt for known failures:
 
@@ -183,7 +201,7 @@ Use negative prompt for known failures:
 
 Negative prompt should reinforce the positive instructions, not replace them.
 
-### 10. Output Format
+### 11. Output Format
 
 End with final output constraints:
 
@@ -212,8 +230,10 @@ The highest risk is panel confusion. Put layout before decorative style.
 Prompt emphasis:
 
 ```text
-same character across panels -> layout -> panel roles -> outfit consistency -> quality checks
+same character across panels -> reuse plan -> layout -> panel roles -> outfit consistency -> quality checks
 ```
+
+If the sheet will seed later scenes, define one stable identity anchor before optional expression, lighting, or action variation panels.
 
 ### `narrative_scene`
 

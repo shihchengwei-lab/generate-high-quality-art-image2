@@ -269,10 +269,10 @@ def build_direct_summary(spec: dict[str, Any], generated: bool, dry_run: bool) -
         "",
         "## Output contract",
         "",
-        "- Normal generation is performed through Codex built-in `image_gen`, not a local OpenAI API client.",
-        "- Local scripts prepare and validate prompt artifacts only.",
+        "- Normal local generation is performed through the OpenAI Images API when `run_generation: true` and this is not a dry run.",
+        "- Local scripts prepare prompt artifacts and can write `result.<format>` plus `generation_result.json` when generation succeeds.",
         "- Direct mode does not export `final_prompt.txt` unless `debug_export_prompt: true`.",
-        "- Debug mode exports prompt artifacts for inspection while preserving the built-in generation path.",
+        "- Debug mode exports prompt artifacts for inspection before or alongside local generation.",
     ]
     return "\n".join(lines) + "\n"
 

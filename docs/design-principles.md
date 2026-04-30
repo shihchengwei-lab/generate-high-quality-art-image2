@@ -2,6 +2,24 @@
 
 These principles guide the root templates and the existing skill workflow.
 
+## Instruction Necessity
+
+Before adding or keeping any rule, field, template family, source note, or quality check, ask:
+
+```text
+Does this need to exist?
+```
+
+Keep it only if it does at least one necessary job:
+
+- preserves identity or source authority
+- captures a user-requested change
+- prevents a known image-generation failure
+- creates a reviewable acceptance check
+- improves repeatable handoff between agents or tools
+
+Remove or merge it if it is only decorative, redundant, provider-specific without a current runtime use, or copied from a prompt gallery.
+
 ## Identity First
 
 For character art, preserving who the character is comes before changing clothing, pose, lighting, or scene.
