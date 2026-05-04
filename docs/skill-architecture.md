@@ -7,7 +7,7 @@ It has two layers:
 - Runtime skill: `.agents/skills/generate-high-quality-art-image2/`
 - Planning assets: root `docs/`, `templates/`, `schemas/`, `quality_checks/`, and `examples/`
 
-The runtime skill handles local direct image generation, host-native Codex generation guidance, and debug prompt export. The root planning assets help an agent prepare, review, and hand off structured prompt briefs before generation.
+The runtime skill handles host-native Codex built-in image generation guidance and debug prompt export. The root planning assets help an agent prepare, review, and hand off structured prompt briefs before generation.
 
 ## What The Skill Does
 
@@ -184,7 +184,8 @@ Possible later work:
 Not this iteration:
 
 - no full MCP server
-- no alternate provider integration beyond the OpenAI Images API path used by the local script
+- no repo-local OpenAI Images API wrapper
+- no alternate provider integration
 - no web UI
 - no prompt gallery import
 - no large vocabulary import

@@ -59,7 +59,7 @@ Methods intentionally not adopted:
   - templates: keep `reference_lock`, `immutable_identity`, and `allowed_changes` near the front.
   - schemas: expose `quality_mode` for planning only.
   - quality_checks: include face, outfit, accessory, and lighting preservation checks.
-  - runtime: map local direct generation to Images generate/edit without importing cookbook demo prompts.
+  - docs: keep official image-generation concepts without importing API implementation into this repo.
 
 ### openai/codex imagegen sample skill
 
@@ -78,7 +78,7 @@ Methods intentionally not adopted:
   - Any fallback script implementation.
 - Local landing positions:
   - SKILL.md: strengthen output handling and revision discipline.
-  - implementation notes: keep built-in generation as host-native behavior, separate from local API generation.
+  - implementation notes: keep built-in generation as the normal host-native behavior.
 
 ### openai/skills
 
@@ -127,7 +127,7 @@ Methods intentionally not adopted:
 - Do not absorb:
   - Broad 80+ template catalog.
   - UI, product, poster, brand, infographic, and unrelated visual task families.
-  - Local API generation as the default path.
+  - Local API generation as a default or parallel path.
 - Local landing positions:
   - README: clarify this repo is skill-oriented and not a generic image-prompt catalog.
   - docs: add `skill-modes.md` and `skill-architecture.md`.
@@ -490,7 +490,7 @@ P2 repos are useful for roadmap design. P3 repos are only weak references for or
 
 Keep two layers clear:
 
-- `.agents/skills/generate-high-quality-art-image2/`: runtime skill for local direct OpenAI Images API generation, host-native generation guidance, and debug prompt export.
+- `.agents/skills/generate-high-quality-art-image2/`: runtime skill for Codex built-in Image 2.0 generation guidance and debug prompt export.
 - Root `docs/`, `templates/`, `schemas/`, `quality_checks/`, and `examples/`: planning, handoff, review, and future compiler assets.
 
 The repo should lead a Codex/Agent user from README to docs, then to a selected template family, then to quality checks. It should not lead with a gallery.
@@ -516,7 +516,7 @@ Reviewed:
 
 Adopt:
 
-- keep the built-in image tool as a host-native path while preserving local direct generation
+- keep the built-in image tool as the normal host-native path
 - keep `SKILL.md` procedural and put detailed references in docs or `references/`
 - keep structured fields and schema-level validation lightweight
 
@@ -618,7 +618,7 @@ Reviewed:
 Decision:
 
 - Keep project-bound output handling guidance and edit-target visibility guidance.
-- Do not add MCP, mask tooling, cost tracking, gallery UI, session database behavior, or provider backends beyond the local OpenAI Images API path.
+- Do not add a repo-local OpenAI Images API wrapper, MCP, mask tooling, cost tracking, gallery UI, session database behavior, or unrelated provider backend.
 - The only relevant method is making assumptions and risk flags explicit before handoff.
 
 ### Loop 4: Character Consistency Across Scenes

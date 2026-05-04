@@ -21,7 +21,6 @@ from lib.output_writer import make_output_dir, render_negative_prompt, write_pro
 from lib.prompt_scorer import render_score_markdown, score_prompt_package
 from lib.reference_roles import apply_reference_defaults
 from lib.spec_io import load_yaml, write_json, write_text
-from generate_image2 import generate_image2
 
 
 def validate_spec(spec: dict[str, Any]) -> None:
@@ -73,6 +72,40 @@ def _write_debug_artifacts(
     write_text(out_dir / "prompt_score.md", render_score_markdown(score))
 
 
+def _write_builtin_generation_notice(
+    out_dir: Path,
+    prompt: str,
+    settings: dict[str, Any],
+    reference_paths: list[Path],
+) -> None:
+    for ref_path in reference_paths:
+        if not ref_path.exists():
+            raise SystemExit(f"Reference image not found: {ref_path}")
+    write_text(
+        out_dir / "codex_imagegen_notice.md",
+        "\n".join(
+            [
+                "# Codex Built-In Image Generation",
+                "",
+                "Use Codex's built-in `image_gen` tool for the actual Image 2.0 generation step.",
+                "This repository does not maintain a separate OpenAI Images API path.",
+                "",
+                "Reference images validated:",
+                *(f"- {path}" for path in reference_paths),
+                "",
+                "Generation settings:",
+                f"- model: {settings.get('model', 'gpt-image-2')}",
+                f"- size: {settings.get('size', '1024x1536')}",
+                f"- quality: {settings.get('quality', 'high')}",
+                "",
+                "Prompt length:",
+                f"- {len(prompt)} characters",
+            ]
+        )
+        + "\n",
+    )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run reference-driven direct generation with Image 2.0.")
     parser.add_argument("--spec", required=True, help="Path to YAML spec.")
@@ -105,7 +138,7 @@ def main() -> None:
 
     write_json(out_dir / "generation_settings.json", generation_settings)
 
-    generated = False
+    builtin_notice_written = False
     if debug_export_prompt:
         _write_debug_artifacts(
             out_dir=out_dir,
@@ -119,20 +152,18 @@ def main() -> None:
 
     should_generate = bool(spec.get("run_generation", True)) and not args.dry_run
     if should_generate:
-        result = generate_image2(
-            prompt=prompt,
-            settings=generation_settings,
-            reference_paths=reference_paths,
-            out_dir=out_dir,
-        )
-        generated = True
+        _write_builtin_generation_notice(out_dir, prompt, generation_settings, reference_paths)
+        builtin_notice_written = True
 
-    write_text(out_dir / "direct_generation_summary.md", build_direct_summary(spec, generated, args.dry_run))
+    write_text(
+        out_dir / "direct_generation_summary.md",
+        build_direct_summary(spec, builtin_notice_written, args.dry_run),
+    )
     print(f"Direct generation job prepared: {out_dir}")
-    if generated:
-        print(f"Generated image saved to: {out_dir / result['result_image']}")
-    elif args.dry_run:
+    if args.dry_run:
         print("Dry run complete. No local image generation was attempted.")
+    elif builtin_notice_written:
+        print("Use Codex built-in image_gen for the image. Local API generation is not part of this skill.")
     else:
         print("Generation skipped because run_generation is false.")
 

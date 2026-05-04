@@ -83,7 +83,7 @@ debug_export_prompt: true
 
 These fields remain unchanged.
 
-For repo-local generation from a spec file, use runtime `execution_mode: direct` with `run_generation: true`. That path calls the OpenAI Images API from the local helper script.
+For repo-local prompt validation from a spec file, use runtime `execution_mode: direct` with `--dry-run`. Actual generation is performed by the host's built-in `image_gen` tool.
 
 Use this distinction:
 

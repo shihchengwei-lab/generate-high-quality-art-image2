@@ -31,7 +31,7 @@ See `docs/prompt-assembly.md` for the full assembly contract.
 Use these methods as field-design guidance:
 
 - Official image prompting and `input_fidelity`: preserve important reference details, describe the complete desired output, and separate unchanged identity from requested edits.
-- Skill mode design: distinguish prompt-only planning, local direct generation, host-native generation, and advisor handoff instead of assuming every environment uses the same generation path.
+- Skill mode design: distinguish prompt-only planning, host-native generation, and advisor handoff instead of assuming every environment uses a local API path.
 - Identity vs motion/action separation: keep static identity descriptors separate from pose, camera, and action language when strict character consistency matters.
 - Prompt decomposition: keep subject, camera, action, look, scene, lighting, quality checks, and output format in separate fields.
 - Quality presets: use `quality_mode` as planning language for how strict the prompt and checks should be.

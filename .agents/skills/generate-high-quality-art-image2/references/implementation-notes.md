@@ -8,7 +8,7 @@ The skill has six phases:
 2. Select negative modules
 3. Build prompt
 4. Score prompt
-5. Generate locally through the OpenAI Images API when explicitly requested
+5. Generate with Codex built-in Image 2.0 when explicitly requested
 6. Inspect and revise
 
 ## Analyze
@@ -165,22 +165,21 @@ Outputs:
 
 ## Generate
 
-For repo-driven skill use, generate locally through `scripts/generate_direct.py`. The script builds the hidden prompt, validates reference image paths, and calls the OpenAI Images API when generation is explicitly authorized.
+For normal skill use, generate by calling Codex's built-in `image_gen` tool. Do not add a repo-local OpenAI Images API wrapper for ordinary generation, and do not require `OPENAI_API_KEY`.
 
-Only call local direct generation if:
+Only call built-in image generation if:
 
 ```yaml
 run_generation: true
 ```
 
-If `run_generation` is missing or false, do not call local generation.
+If `run_generation` is false, do not call built-in image generation.
 
-With one or two reference images, local direct generation uses the Images edit endpoint so references can guide identity, pose, and composition. Without reference images, use image generation.
+Use Codex built-in Image 2.0.
 
-Outputs when authorized and successful:
+Outputs when authorized:
 
-- `result.<format>`
-- `generation_result.json`
+- the generated image saved by Codex's built-in image generation system
 
 ## Inspect
 
@@ -212,7 +211,7 @@ The default sample specs must set:
 run_generation: true
 ```
 
-Tests and install checks must use `--dry-run` so they validate prompt construction without spending credits or requiring API credentials.
+Tests and install checks must use `--dry-run` so they validate prompt construction without triggering generation.
 
 ## Failure Handling
 

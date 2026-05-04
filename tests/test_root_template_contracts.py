@@ -78,16 +78,22 @@ class RootTemplateContractTests(unittest.TestCase):
 
     def test_runtime_requirements_stay_local_only(self) -> None:
         requirements = (ROOT / "requirements.txt").read_text(encoding="utf-8").splitlines()
-        self.assertEqual(requirements, ["pyyaml", "openai"])
+        self.assertEqual(requirements, ["pyyaml"])
 
-    def test_generate_direct_uses_local_generation_helper(self) -> None:
+    def test_generate_direct_has_no_repo_local_api_path(self) -> None:
         body = (
             ROOT
             / ".agents/skills/generate-high-quality-art-image2/scripts/generate_direct.py"
         ).read_text(encoding="utf-8")
-        self.assertIn("from generate_image2 import generate_image2", body)
-        self.assertIn("result = generate_image2(", body)
+        self.assertNotIn("from generate_image2 import generate_image2", body)
+        self.assertNotIn("result = generate_image2(", body)
         self.assertNotIn("Local API generation is disabled", body)
+        self.assertIn("Codex's built-in `image_gen` tool", body)
+
+    def test_repo_local_api_helper_is_absent(self) -> None:
+        self.assertFalse(
+            (ROOT / ".agents/skills/generate-high-quality-art-image2/scripts/generate_image2.py").exists()
+        )
 
     def test_build_prompt_writes_resolved_reference_paths(self) -> None:
         tmp = Path(tempfile.mkdtemp())

@@ -65,7 +65,7 @@ For Codex / Agent use:
 4. Use `docs/prompt-assembly.md` to assemble the final prompt.
 5. Review the matching file in `quality_checks/`.
 
-For ordinary repo-driven image generation, use `generate_direct.py` through the installed skill or `.agents/skills/generate-high-quality-art-image2/SKILL.md`. Host-native Codex image generation remains available when references are already in the conversation and the user expects an inline result.
+For ordinary image generation, use the installed skill or `.agents/skills/generate-high-quality-art-image2/SKILL.md`; the normal path is Codex built-in Image 2.0 generation through `image_gen`.
 
 ### Core template families
 
@@ -224,7 +224,7 @@ Image B must not take over the environment. User text always wins for scene, lig
 ## Direct mode
 
 Direct mode is the default.
-When `run_generation: true` and the command is not a dry run, the local script calls the OpenAI Images API directly. With reference images, it uses the image edit endpoint so Image A and Image B can guide the result.
+When `run_generation: true` and the command is not a dry run, the local script prepares a built-in `image_gen` handoff notice. The repository does not maintain its own OpenAI Images API generation wrapper.
 
 ```yaml
 execution_mode: "direct"
@@ -244,8 +244,7 @@ Direct mode writes:
 
 - `generation_settings.json`
 - `direct_generation_summary.md`
-- `result.<format>` when local generation succeeds
-- `generation_result.json` when local generation succeeds
+- `codex_imagegen_notice.md` when generation is requested through the built-in tool handoff
 
 Direct mode does not write `final_prompt.txt` unless debug export is enabled.
 
@@ -333,4 +332,4 @@ Expected behavior:
 pip install -r requirements.txt
 ```
 
-Local direct generation requires the OpenAI SDK from `requirements.txt` and API credentials available in the environment.
+Normal image generation uses Codex's built-in `image_gen` tool and does not require `OPENAI_API_KEY`.

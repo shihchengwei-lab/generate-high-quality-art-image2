@@ -43,7 +43,6 @@ $required = @(
     "SKILL.md",
     "scripts\build_prompt.py",
     "scripts\generate_direct.py",
-    "scripts\generate_image2.py",
     "scripts\lib\reference_roles.py",
     "scripts\lib\prompt_scorer.py",
     "assets\sample_debug_spec.yaml"
