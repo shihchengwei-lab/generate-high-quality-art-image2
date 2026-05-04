@@ -19,34 +19,8 @@ from lib.negative_selector import (
 from lib.output_writer import make_output_dir, render_negative_prompt, write_prompt_package
 from lib.prompt_scorer import render_score_markdown, score_prompt_package
 from lib.reference_roles import apply_reference_defaults
+from lib.spec_contract import resolve_reference_paths, validate_direct_spec
 from lib.spec_io import load_yaml, write_json, write_text
-
-
-def validate_spec(spec: dict[str, Any]) -> None:
-    refs = spec.get("reference_images", [])
-    if not isinstance(refs, list):
-        raise SystemExit("reference_images must be a list.")
-    if len(refs) not in (1, 2):
-        raise SystemExit("This skill supports exactly one or two reference images.")
-    for key in ["asset_name", "intended_use", "image_type"]:
-        if not spec.get(key):
-            raise SystemExit(f"{key} is required.")
-
-
-def resolve_reference_paths(spec: dict[str, Any], spec_path: Path) -> list[Path]:
-    resolved: list[Path] = []
-    for ref in spec.get("reference_images", []):
-        ref_path = Path(str(ref.get("path", "")))
-        if not ref_path.is_absolute():
-            ref_path = (spec_path.parent / ref_path).resolve()
-        resolved.append(ref_path)
-    return resolved
-
-
-def build_reference_text(spec: dict[str, Any]) -> str:
-    from lib.reference_roles import reference_priority_block
-
-    return reference_priority_block(spec)
 
 
 def build_prompt(spec: dict[str, Any], negative_blocks: dict[str, dict[str, str]]) -> str:
@@ -86,7 +60,7 @@ def main() -> None:
 
     spec_path = Path(args.spec)
     spec = apply_reference_defaults(load_yaml(spec_path))
-    validate_spec(spec)
+    validate_direct_spec(spec)
 
     out_dir = make_output_dir(Path(args.out), str(spec["asset_name"]))
     selection = select_negative_modules(spec)

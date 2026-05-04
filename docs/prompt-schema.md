@@ -59,7 +59,7 @@ Use these methods as field-design guidance:
 - Required: optional; default is `standard`.
 - Allowed values: `draft`, `standard`, `high_fidelity`, `character_lock_strict`.
 - Example: `character_lock_strict`.
-- Common mistakes: assuming this changes Image API parameters. In this iteration it is only a planning and quality-check hint.
+- Common mistakes: assuming this changes image-generation parameters. In this iteration it is only a planning and quality-check hint.
 
 ### `handoff_review`
 

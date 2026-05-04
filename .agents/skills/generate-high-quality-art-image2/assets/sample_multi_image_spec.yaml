@@ -15,8 +15,8 @@ aspect_ratio: "2:3"
 reference_images:
   - path: "./refs/ref_identity.png"
     role: "primary_identity_costume"
-  - path: "./refs/ref_lighting_pose.png"
-    role: "secondary_lighting_mood"
+  - path: "./refs/ref_pose_composition.png"
+    role: "pose_composition"
 
 shared_identity:
   subject: "a benevolent Taiwanese folk deity"
@@ -31,7 +31,7 @@ shared_identity:
     - "pose"
     - "camera angle"
     - "background atmosphere"
-    - "lighting intensity"
+    - "lighting intensity from per-image user text"
     - "minor prop placement"
   variable_traits_forbidden:
     - "changing face identity"

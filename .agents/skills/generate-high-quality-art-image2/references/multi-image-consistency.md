@@ -66,4 +66,4 @@ The workflow reports common risks:
 
 ## Conflict Rule
 
-Fixed identity traits always win. Reference image 1 controls face, age, hairstyle, symbolic identity, and core costume. Reference image 2 can influence pose, lighting, composition, and atmosphere only.
+Fixed identity traits always win. Reference image 1 controls face, age, hairstyle, symbolic identity, and core costume. Reference image 2 can influence pose and composition only. User text controls scene, lighting, atmosphere, time, effects, and story moment.

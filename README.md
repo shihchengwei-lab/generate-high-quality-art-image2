@@ -11,7 +11,7 @@ The current workflow is designed for:
 - Image A as the identity sheet source
 - Image B as the pose / composition source
 - user text as the scene, lighting, atmosphere, time, effects, and story-moment authority
-- direct image generation by default
+- direct image generation through Codex built-in `image_gen` by default
 - debug-only prompt export when prompt inspection is needed
 
 It is not designed for sprite sheets, animation frames, tilemaps, transparent-background game assets, UI icon batches, collision data, asset slicing, or Flutter / Flame integration.
@@ -166,7 +166,7 @@ Image A provides identity
 -> Image B provides pose / composition
 -> User text provides scene authority
 -> hidden prompt is assembled internally
--> direct generation runs by default
+-> Codex built-in `image_gen` runs generation
 -> debug mode exports prompt artifacts only when requested
 ```
 
@@ -224,7 +224,7 @@ Image B must not take over the environment. User text always wins for scene, lig
 ## Direct mode
 
 Direct mode is the default.
-When `run_generation: true` and the command is not a dry run, the local script prepares a built-in `image_gen` handoff notice. The repository does not maintain its own OpenAI Images API generation wrapper.
+Generation is performed by Codex's built-in `image_gen` tool, not by a repo-local API script. The local helper is validation/debug tooling only.
 
 ```yaml
 execution_mode: "direct"
@@ -232,23 +232,7 @@ debug_export_prompt: false
 run_generation: true
 ```
 
-Run:
-
-```bash
-python .agents/skills/generate-high-quality-art-image2/scripts/generate_direct.py \
-  --spec .agents/skills/generate-high-quality-art-image2/assets/sample_spec.yaml \
-  --out outputs
-```
-
-Direct mode writes:
-
-- `generation_settings.json`
-- `direct_generation_summary.md`
-- `codex_imagegen_notice.md` when generation is requested through the built-in tool handoff
-
-Direct mode does not write `final_prompt.txt` unless debug export is enabled.
-
-For local validation without any generation attempt, add `--dry-run`:
+For local validation, run the helper with `--dry-run`:
 
 ```bash
 python .agents/skills/generate-high-quality-art-image2/scripts/generate_direct.py \
@@ -257,9 +241,18 @@ python .agents/skills/generate-high-quality-art-image2/scripts/generate_direct.p
   --dry-run
 ```
 
+Helper dry-run writes:
+
+- `generation_settings.json`
+- `direct_generation_summary.md`
+
+Direct mode does not write `final_prompt.txt` unless debug export is enabled.
+
+Running the helper without `--dry-run` while `run_generation: true` is intentionally blocked so the repo does not pretend to call the host image tool.
+
 ## Debug mode
 
-Debug mode preserves the same direct-generation path but exports the internal prompt package for inspection.
+Debug mode preserves the same built-in generation contract but exports the internal prompt package for inspection.
 
 ```yaml
 execution_mode: "debug"

@@ -102,7 +102,7 @@ Allowed values:
 - `high_fidelity`
 - `character_lock_strict`
 
-`quality_mode` is a planning hint. It does not change Image API parameters in this iteration.
+`quality_mode` is a planning hint. It does not change image-generation parameters in this iteration.
 
 ### `draft`
 

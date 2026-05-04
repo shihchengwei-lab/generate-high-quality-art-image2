@@ -176,7 +176,6 @@ examples/
 Possible later work:
 
 - CLI command that fills a root JSON template and writes a prompt package.
-- MCP server for image generation or image session management.
 - Session manifest for iterative edits and revision history.
 - Series pipeline with persistent character cards and location references.
 - Optional prompt optimizer that upgrades weak fields without changing user intent.

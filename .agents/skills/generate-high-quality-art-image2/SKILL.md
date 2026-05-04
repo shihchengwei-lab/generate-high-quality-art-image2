@@ -104,7 +104,7 @@ python .agents/skills/generate-high-quality-art-image2/scripts/generate_direct.p
 python .agents/skills/generate-high-quality-art-image2/scripts/build_prompt.py --spec <spec.yaml>
 ```
 
-Do not introduce a repo-local OpenAI Images API path for normal generation. If `generate_direct.py` is run without `--dry-run`, it prepares a built-in `image_gen` handoff notice rather than calling an API.
+Do not introduce a repo-local OpenAI Images API path for normal generation. Do not run helper scripts as a substitute for `image_gen`; they exist only to validate specs or export debug prompt packages.
 
 ## Reference image rules
 
@@ -213,11 +213,10 @@ Always include the following internal constraints:
 
 ## Output files
 
-Direct mode writes:
+Helper dry-run writes:
 
 - `generation_settings.json`
 - `direct_generation_summary.md`
-- `codex_imagegen_notice.md` when generation is requested through the built-in tool handoff
 
 Debug mode additionally writes:
 

@@ -87,8 +87,9 @@ class RootTemplateContractTests(unittest.TestCase):
         ).read_text(encoding="utf-8")
         self.assertNotIn("from generate_image2 import generate_image2", body)
         self.assertNotIn("result = generate_image2(", body)
+        self.assertNotIn("codex_imagegen_notice", body)
         self.assertNotIn("Local API generation is disabled", body)
-        self.assertIn("Codex's built-in `image_gen` tool", body)
+        self.assertIn("does not call image_gen", body)
 
     def test_repo_local_api_helper_is_absent(self) -> None:
         self.assertFalse(
@@ -134,6 +135,58 @@ class RootTemplateContractTests(unittest.TestCase):
             settings["resolved_reference_paths"],
             [str((tmp / "refs/identity.png").resolve())],
         )
+
+    def test_multi_image_prompt_keeps_image_b_out_of_lighting(self) -> None:
+        tmp = Path(tempfile.mkdtemp())
+        spec_path = tmp / "multi.yaml"
+        spec_path.write_text(
+            yaml.safe_dump(
+                {
+                    "asset_set_name": "multi_contract",
+                    "workflow_type": "multi_image_consistency",
+                    "run_generation": False,
+                    "intended_use": "mobile game illustration sequence",
+                    "image_type": "deity_card_sequence",
+                    "reference_images": [
+                        {"path": "./refs/identity.png", "role": "primary_identity_costume"},
+                        {"path": "./refs/pose.png", "role": "secondary_lighting_mood"},
+                    ],
+                    "shared_identity": {
+                        "subject": "same deity",
+                        "fixed_traits": ["same face identity", "same hairstyle"],
+                    },
+                    "images": [
+                        {
+                            "id": "image_01",
+                            "title": "Moon vow",
+                            "scene": "mountain shrine",
+                            "pose": "solemn vow gesture",
+                            "framing": "full-body",
+                            "lighting": "cool moonlight from user text",
+                        }
+                    ],
+                    "negative_profile": {"mode": "auto"},
+                },
+                sort_keys=False,
+            ),
+            encoding="utf-8",
+        )
+        out_dir = tmp / "outputs"
+        script = ROOT / ".agents/skills/generate-high-quality-art-image2/scripts/build_multi_image_prompts.py"
+        result = subprocess.run(
+            [sys.executable, str(script), "--spec", str(spec_path), "--out", str(out_dir)],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        job_dir = next((out_dir / "multi_contract").iterdir())
+        prompt = (job_dir / "image_01_prompt.txt").read_text(encoding="utf-8").lower()
+        guide = (job_dir / "consistency_guide.md").read_text(encoding="utf-8").lower()
+        self.assertIn("role: pose_composition", guide)
+        self.assertIn("reference image 2 only for pose", prompt)
+        self.assertIn("user text controls scene, lighting, atmosphere", prompt)
+        self.assertNotIn("reference image 2 for pose, lighting", prompt)
 
     def test_inspect_output_detects_generated_image_format(self) -> None:
         tmp = Path(tempfile.mkdtemp())

@@ -249,7 +249,7 @@ def build_generation_settings(spec: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def build_direct_summary(spec: dict[str, Any], notice_written: bool, dry_run: bool) -> str:
+def build_direct_summary(spec: dict[str, Any], dry_run: bool) -> str:
     settings = build_generation_settings(spec)
     lines = [
         "# Direct Generation Summary",
@@ -259,9 +259,9 @@ def build_direct_summary(spec: dict[str, Any], notice_written: bool, dry_run: bo
         f"Debug export prompt: {settings.get('debug_export_prompt')}",
         f"Run generation: {settings.get('run_generation')}",
         f"Dry run: {dry_run}",
-        "Generation route: Codex built-in `image_gen`",
-        "Repo-local API call: False",
-        f"Built-in generation notice written: {notice_written}",
+        "Host generation route: Codex built-in `image_gen`",
+        "Local helper generated image: False",
+        "Local helper mode: validation/debug artifacts only",
         "",
         "## Reference priority",
         "",
@@ -271,8 +271,8 @@ def build_direct_summary(spec: dict[str, Any], notice_written: bool, dry_run: bo
         "",
         "## Output contract",
         "",
-        "- Normal generation is performed through Codex built-in `image_gen`, not a repo-local OpenAI Images API client.",
-        "- Local scripts prepare and validate prompt artifacts only.",
+        "- Normal generation is performed by Codex built-in `image_gen`, not this local helper.",
+        "- Local scripts validate specs and prepare debug prompt artifacts only.",
         "- Direct mode does not export `final_prompt.txt` unless `debug_export_prompt: true`.",
         "- Debug mode exports prompt artifacts for inspection while preserving the built-in generation path.",
     ]
