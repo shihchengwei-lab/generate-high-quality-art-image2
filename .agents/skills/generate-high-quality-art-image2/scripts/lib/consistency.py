@@ -106,7 +106,7 @@ def build_per_image_prompt(
         "",
         "Shared identity rule: preserve the same subject identity across the full sequence.",
         f"Subject canon: {shared.get('subject', 'same character identity')}.",
-        f"Reference image priority: use reference image 1 as the identity/costume anchor; use reference image 2 for pose, lighting, composition, and atmosphere when present. Reference count: {ref_count}.",
+        f"Reference image priority: use reference image 1 as the identity/costume anchor; use reference image 2 only for pose, camera angle, framing, body gesture, and composition rhythm when present. User text controls scene, lighting, atmosphere, time, effects, and story moment. Reference count: {ref_count}.",
         f"Fixed traits: {fixed_traits}.",
         f"Allowed variation for this sequence: {allowed}.",
         f"Forbidden variation: {forbidden}.",

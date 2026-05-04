@@ -165,7 +165,7 @@ Outputs:
 
 ## Generate
 
-For normal skill use, generate by calling Codex's built-in `image_gen` tool. Do not call image-generation APIs from local scripts, and do not require `OPENAI_API_KEY`.
+For normal skill use, generate by calling Codex's built-in `image_gen` tool. Do not add a repo-local OpenAI Images API wrapper for ordinary generation, and do not require `OPENAI_API_KEY`.
 
 Only call built-in image generation if:
 
@@ -173,7 +173,7 @@ Only call built-in image generation if:
 run_generation: true
 ```
 
-If `run_generation` is missing or false, do not call built-in image generation.
+If `run_generation` is false, do not call built-in image generation.
 
 Use Codex built-in Image 2.0.
 
@@ -208,10 +208,10 @@ Outputs:
 The default sample specs must set:
 
 ```yaml
-run_generation: false
+run_generation: true
 ```
 
-Do not run high-quality generations automatically during setup or tests.
+Tests and install checks must use `--dry-run` so they validate prompt construction without triggering generation.
 
 ## Failure Handling
 

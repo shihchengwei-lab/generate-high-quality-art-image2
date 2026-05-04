@@ -19,24 +19,8 @@ from lib.negative_selector import (
 from lib.output_writer import make_output_dir, render_negative_prompt, write_prompt_package
 from lib.prompt_scorer import render_score_markdown, score_prompt_package
 from lib.reference_roles import apply_reference_defaults
+from lib.spec_contract import resolve_reference_paths, validate_direct_spec
 from lib.spec_io import load_yaml, write_json, write_text
-
-
-def validate_spec(spec: dict[str, Any]) -> None:
-    refs = spec.get("reference_images", [])
-    if not isinstance(refs, list):
-        raise SystemExit("reference_images must be a list.")
-    if len(refs) not in (1, 2):
-        raise SystemExit("This skill supports exactly one or two reference images.")
-    for key in ["asset_name", "intended_use", "image_type"]:
-        if not spec.get(key):
-            raise SystemExit(f"{key} is required.")
-
-
-def build_reference_text(spec: dict[str, Any]) -> str:
-    from lib.reference_roles import reference_priority_block
-
-    return reference_priority_block(spec)
 
 
 def build_prompt(spec: dict[str, Any], negative_blocks: dict[str, dict[str, str]]) -> str:
@@ -74,8 +58,9 @@ def main() -> None:
     parser.set_defaults(score=True)
     args = parser.parse_args()
 
-    spec = apply_reference_defaults(load_yaml(Path(args.spec)))
-    validate_spec(spec)
+    spec_path = Path(args.spec)
+    spec = apply_reference_defaults(load_yaml(spec_path))
+    validate_direct_spec(spec)
 
     out_dir = make_output_dir(Path(args.out), str(spec["asset_name"]))
     selection = select_negative_modules(spec)
@@ -84,6 +69,7 @@ def main() -> None:
     negative_prompt = render_negative_prompt(negative_blocks)
     reference_interpretation = build_reference_interpretation(spec)
     generation_settings = build_generation_settings(spec)
+    generation_settings["resolved_reference_paths"] = [str(path) for path in resolve_reference_paths(spec, spec_path)]
 
     write_prompt_package(
         out_dir=out_dir,
@@ -98,7 +84,7 @@ def main() -> None:
         write_score_files(out_dir, final_prompt, generation_settings, negative_prompt, reference_interpretation)
 
     print(f"Debug prompt package created: {out_dir}")
-    print("Default user workflow is Codex built-in image_gen. This prompt package is for debug/review only.")
+    print("Default skill workflow is Codex built-in image_gen. This prompt package is for debug/review only.")
 
 
 if __name__ == "__main__":

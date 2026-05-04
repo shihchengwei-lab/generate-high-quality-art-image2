@@ -87,6 +87,9 @@ class DirectReferenceWorkflowTests(unittest.TestCase):
         self.assertIn("do not reproduce front/side/back views", prompt)
         self.assertIn("ignore image b background", prompt)
         self.assertIn("moonlit lushan summit", prompt)
+        self.assertIn("visual accuracy and clean render contract", prompt)
+        self.assertIn("prioritize literal accuracy over decorative complexity", prompt)
+        self.assertIn("clean controlled rendering", prompt)
         self.assertIn("role: identity_sheet", interpretation)
         self.assertIn("role: pose_composition", interpretation)
 
@@ -98,6 +101,7 @@ class DirectReferenceWorkflowTests(unittest.TestCase):
         self.assertTrue((job_dir / "generation_settings.json").exists())
         self.assertTrue((job_dir / "direct_generation_summary.md").exists())
         self.assertFalse((job_dir / "final_prompt.txt").exists())
+        self.assertFalse((job_dir / "codex_imagegen_notice.md").exists())
 
     def test_c_debug_mode_exports_prompt_artifacts(self) -> None:
         spec = base_spec()
@@ -171,6 +175,8 @@ class DirectReferenceWorkflowTests(unittest.TestCase):
         self.assertIn("soft black boots, not barefoot", prompt)
         self.assertIn("negative prompt / custom avoid list", prompt)
         self.assertIn("hands and fingers", checklist)
+        self.assertIn("visual accuracy", checklist)
+        self.assertIn("render cleanliness", checklist)
         self.assertIn("bare feet / footwear", checklist)
         self.assertIn("lighting conflict", checklist)
         self.assertIn("scene conflict", checklist)
@@ -190,6 +196,20 @@ class DirectReferenceWorkflowTests(unittest.TestCase):
             score["critical_issues"],
         )
         self.assertEqual(score["dimensions"]["reference_role_clarity"]["score"], 5)
+
+    def test_g_local_helper_refuses_non_dry_run_generation(self) -> None:
+        spec = base_spec()
+        tmp = Path(tempfile.mkdtemp())
+        spec_path = tmp / "spec.yaml"
+        spec_path.write_text(yaml.safe_dump(spec, sort_keys=False), encoding="utf-8")
+        result = subprocess.run(
+            [sys.executable, str(SCRIPT), "--spec", str(spec_path), "--out", str(tmp / "outputs")],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("does not call image_gen", result.stderr)
 
 
 if __name__ == "__main__":

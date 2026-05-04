@@ -2,6 +2,12 @@
   "task_type": "character_sheet",
   "mode": "host_native",
   "quality_mode": "standard",
+  "handoff_review": {
+    "assumptions": [],
+    "missing_inputs": [],
+    "risk_flags": [],
+    "next_review_step": ""
+  },
   "reference_lock": true,
   "character_identity": {
     "face": "",
@@ -11,6 +17,12 @@
     "age_impression": "",
     "temperament": "",
     "recognizable_traits": []
+  },
+  "reuse_plan": {
+    "will_seed_later_scenes": false,
+    "identity_anchor": "",
+    "optional_variation_panels": [],
+    "forbidden_variation": []
   },
   "outfit_definition": {
     "base_outfit": "",

@@ -4,6 +4,18 @@ Score each item from 0 to 5.
 
 Use this checklist after generating, reviewing, or preparing a revision prompt.
 
+## Visual Accuracy
+
+- Subject matches the user request
+- Main action matches the requested story moment
+- Attire and footwear match the requested change
+- Props and symbols are requested or justified by the scene
+- Scene, time, weather, and lighting match user text
+- Image B did not add unrequested background details, props, palette, or effects
+- No unrequested secondary characters
+- No unrequested labels, signage, marks, UI, or symbols
+- If the result is inaccurate, the revision prompt changes only the inaccurate detail while preserving identity and composition
+
 ## Identity
 
 - Face identity preserved from reference image 1
@@ -74,6 +86,12 @@ Use this checklist after generating, reviewing, or preparing a revision prompt.
 
 ## Texture
 
+- Render edges are clean
+- Gradients are stable
+- Texture density is intentional
+- Material transitions are coherent
+- No unwanted speckle or grain over the subject
+- No muddy haze over the subject
 - No high-frequency scratches
 - No chipped paint effect unless requested
 - No fractured fabric texture
@@ -110,14 +128,18 @@ Use this checklist after generating, reviewing, or preparing a revision prompt.
 
 A generated image is acceptable only if:
 
+- visual accuracy score average >= 4
 - identity score average >= 4
 - anatomy score average >= 4
 - lighting score average >= 4
+- texture/render cleanliness score average >= 4
 - no severe hand/finger failure
 - no severe face identity failure
 - no footwear or barefoot-state failure when visible
 - no scene-source conflict
 - no lighting-source conflict
+- no unrequested subject/action/scene substitution
+- no visible noise, speckle, dirty texture, or muddy haze over the subject
 - no random text/glyph/code artifacts
 - no major costume fragmentation
 - no major background clutter over the subject

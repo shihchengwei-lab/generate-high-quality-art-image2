@@ -23,6 +23,8 @@ from lib.spec_io import write_json, write_text
 REVISION_SNIPPETS = {
     "hands": "Preserve the same composition and identity, but redraw the hands with natural anatomy, readable fingers, correct finger count, and stable wrist alignment.",
     "face_identity": "Preserve the composition and lighting, but restore the face identity, age impression, hairstyle, and emotional tone from reference image 1.",
+    "visual_accuracy": "Preserve the strongest parts of the image, but correct literal accuracy: match the requested subject, action, attire, props, scene, lighting, and reference roles. Remove unrequested elements that made the result inaccurate.",
+    "noise_artifacts": "Preserve the subject, composition, and mood, but clean the render: remove speckle, dirty texture, scratch-like lines, muddy haze, edge halos, scattered highlight noise, and chaotic micro-detail. Use smooth gradients and controlled material transitions.",
     "clothing_fragmentation": "Preserve the costume concept, but simplify the robe into coherent layers with a clear silhouette, intentional ornament hierarchy, and no fragmented fabric panels.",
     "noisy_glow": "Preserve the warm divine atmosphere, but reduce glitter noise, edge halos, scattered highlights, and messy translucent overlays. Use controlled soft amber glow.",
     "background_clutter": "Preserve the subject and mood, but simplify the background. Remove random symbols, unreadable text, code-like fragments, and visual clutter over the subject.",
@@ -56,17 +58,25 @@ def main() -> None:
     if not job_dir.exists():
         raise SystemExit(f"Job dir not found: {job_dir}")
 
-    result_exists = (job_dir / "result.png").exists()
+    result_images = sorted(
+        path.name
+        for path in job_dir.glob("result.*")
+        if path.suffix.lower() in {".png", ".jpg", ".jpeg", ".webp"}
+    )
+    result_exists = bool(result_images)
 
     # Build a simple checklist template. Use a minimal set of items to remind the reviewer what to look for.
     checklist = [
         "# Quality Checklist",
         "",
         f"Result image exists: {result_exists}",
+        f"Result images: {', '.join(result_images) if result_images else 'none'}",
         "",
         "## Review items",
         "",
         "- [ ] Identity preserved",
+        "- [ ] Literal subject/action/scene accuracy acceptable",
+        "- [ ] No unrequested props, people, symbols, labels, or environment elements",
         "- [ ] Face consistent with reference image 1",
         "- [ ] Age impression preserved",
         "- [ ] Hairstyle preserved",
@@ -78,7 +88,10 @@ def main() -> None:
         "- [ ] Lighting direction consistent",
         "- [ ] Glow controlled",
         "- [ ] No harsh edge halos",
+        "- [ ] No visible speckle/noise or muddy haze over the subject",
         "- [ ] No high-frequency scratches",
+        "- [ ] Texture density controlled",
+        "- [ ] Material transitions clean",
         "- [ ] No random text",
         "- [ ] No code fragments",
         "- [ ] No unreadable glyphs",

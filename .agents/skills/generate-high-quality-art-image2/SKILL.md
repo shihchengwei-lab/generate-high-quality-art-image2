@@ -1,6 +1,6 @@
 ---
 name: generate-high-quality-art-image2
-description: Generate production-quality single-image game art, deity illustrations, character cards, story illustrations, key visuals, and promotional artwork using Codex built-in Image 2.0 generation, not local API calls. Use for reference-driven direct generation where Image A controls identity, Image B controls pose/composition, and user text controls scene, lighting, atmosphere, time, effects, and story moment. Do not use for sprite sheets, animation frames, tilemaps, transparent-background game assets, UI icon batches, collision data, asset slicing, or game-engine integration.
+description: Generate production-quality single-image game art, deity illustrations, character cards, story illustrations, key visuals, and promotional artwork using Codex built-in Image 2.0 generation, not a repo-local API path. Use for reference-driven direct generation where Image A controls identity, Image B controls pose/composition, and user text controls scene, lighting, atmosphere, time, effects, and story moment. Do not use for sprite sheets, animation frames, tilemaps, transparent-background game assets, UI icon batches, collision data, asset slicing, or game-engine integration.
 ---
 
 # Generate High Quality Art with Image 2.0
@@ -54,13 +54,15 @@ debug_export_prompt: false
 For normal user work:
 
 - Do call the built-in `image_gen` tool directly.
-- Do not call image-generation APIs from local scripts.
+- Do not add or call a repo-local OpenAI Images API wrapper for ordinary generation.
 - Do not require or ask for `OPENAI_API_KEY`.
 - Do not ask the user to manually transfer `final_prompt.txt` unless they explicitly request debug output.
 - If reference images are local files and not already attached in the thread, inspect/open them first so the built-in generator has the visual context, then refer to them as Image A and Image B in the `image_gen` prompt.
 - Treat input images as references unless the user explicitly asks to edit an existing image.
+- If the user asks to modify an existing image, make sure that image is visible in the conversation context before treating it as an edit target.
 - Do not silently switch from the built-in path to local API, CLI, ComfyUI, LoRA, or other provider workflows.
-- If the user asks for multiple distinct assets or variants, make one built-in generation call per distinct final image instead of merging unrelated deliverables into one prompt.
+- If the user asks for multiple distinct assets or variants, make one generation call per distinct final image instead of merging unrelated deliverables into one prompt.
+- Do not use `OPENAI_API_KEY` or a repo-local API helper as a batch escape hatch. If a request is too large for practical host-native generation, pause and ask whether the user wants to change scope or authorize a different workflow.
 
 ## Output handling
 
@@ -83,6 +85,10 @@ When revising a generated result:
 - Change one targeted thing per revision when possible.
 - Preserve immutable identity before adjusting pose, attire, scene, lighting, or effects.
 - Do not add new style systems, providers, or pipeline steps just because one output failed.
+- When the generated image is visible to the agent and follow-up inspection is available, compare it against the quality checklist before deciding that a revision is done.
+- For inaccurate or noisy outputs, repair the concrete failure instead of adding generic quality words: use `visual_accuracy` for wrong subject/action/scene/props and `noise_artifacts` for speckle, muddy haze, dirty texture, edge halos, scratch-like lines, or chaotic micro-detail.
+
+When adding or revising constraints, keep only rules that preserve identity/source authority, capture the requested change, prevent a known failure, or create a reviewable output check. Delete or merge decorative and redundant instructions.
 
 The final prompt sent to `image_gen` must include:
 
@@ -101,7 +107,14 @@ python .agents/skills/generate-high-quality-art-image2/scripts/generate_direct.p
 python .agents/skills/generate-high-quality-art-image2/scripts/build_prompt.py --spec <spec.yaml>
 ```
 
-Do not run `generate_direct.py` without `--dry-run` as the primary generation path. Local scripts cannot invoke Codex's built-in image generation tool.
+Do not introduce a repo-local OpenAI Images API path for normal generation. Do not run helper scripts as a substitute for `image_gen`; they exist only to validate specs or export debug prompt packages.
+
+For targeted post-generation repair prompts:
+
+```bash
+python .agents/skills/generate-high-quality-art-image2/scripts/inspect_output.py --job-dir <job-dir> --issue visual_accuracy
+python .agents/skills/generate-high-quality-art-image2/scripts/inspect_output.py --job-dir <job-dir> --issue noise_artifacts
+```
 
 ## Reference image rules
 
@@ -210,9 +223,7 @@ Always include the following internal constraints:
 
 ## Output files
 
-Built-in direct generation writes the final image through Codex's normal generated-image output location.
-
-Dry-run / debug helper scripts may write:
+Helper dry-run writes:
 
 - `generation_settings.json`
 - `direct_generation_summary.md`

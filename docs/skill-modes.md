@@ -63,7 +63,7 @@ Behavior:
 - assemble the prompt
 - preserve reference roles
 - call the host-native image tool only when the user has asked to generate
-- do not call local image APIs
+- do not replace the host-native path with a different provider
 
 ## Runtime Execution Mode
 
@@ -83,6 +83,8 @@ debug_export_prompt: true
 
 These fields remain unchanged.
 
+For repo-local prompt validation from a spec file, use runtime `execution_mode: direct` with `--dry-run`. Actual generation is performed by the host's built-in `image_gen` tool.
+
 Use this distinction:
 
 | Field | Layer | Meaning |
@@ -100,7 +102,7 @@ Allowed values:
 - `high_fidelity`
 - `character_lock_strict`
 
-`quality_mode` is a planning hint. It does not change Image API parameters in this iteration.
+`quality_mode` is a planning hint. It does not change image-generation parameters in this iteration.
 
 ### `draft`
 

@@ -11,6 +11,12 @@ Create a new finished illustration of the same sacred healer character. Keep the
   "task_type": "character_locked_scene",
   "mode": "host_native",
   "quality_mode": "character_lock_strict",
+  "handoff_review": {
+    "assumptions": ["Image A is the identity reference"],
+    "missing_inputs": [],
+    "risk_flags": ["travel outfit may conflict with original footwear"],
+    "next_review_step": "inspect generated footwear and pendant position"
+  },
   "reference_lock": {
     "enabled": true,
     "identity_source": "Image A",

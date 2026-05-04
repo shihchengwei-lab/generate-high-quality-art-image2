@@ -11,6 +11,12 @@ Create a character setting sheet for a sacred healer so future illustrations can
   "task_type": "character_sheet",
   "mode": "prompt_only",
   "quality_mode": "high_fidelity",
+  "handoff_review": {
+    "assumptions": ["the sheet will seed later scenes"],
+    "missing_inputs": [],
+    "risk_flags": ["panel variation can cause identity drift"],
+    "next_review_step": "verify the front-view identity anchor before using the sheet for scenes"
+  },
   "reference_lock": true,
   "character_identity": {
     "face": "soft youthful sacred healer face",
@@ -20,6 +26,12 @@ Create a character setting sheet for a sacred healer so future illustrations can
     "age_impression": "young adult",
     "temperament": "calm, protective, solemn",
     "recognizable_traits": ["soft gaze", "quiet sacred presence"]
+  },
+  "reuse_plan": {
+    "will_seed_later_scenes": true,
+    "identity_anchor": "front_view with unobstructed face, hair, body proportion, outfit, and pendant position",
+    "optional_variation_panels": ["one restrained expression variation if panel count allows"],
+    "forbidden_variation": ["do not change face identity", "do not change robe structure", "do not move the jade pendant"]
   },
   "outfit_definition": {
     "base_outfit": "layered healer robe with restrained sacred trim",
@@ -71,6 +83,8 @@ Create a character setting sheet for a sacred healer so future illustrations can
 Create one clean character setting sheet for a sacred healer. The sheet must show the same character in all panels: front view, side or three-quarter view, back view, face closeup, costume detail, and accessory detail.
 
 Identity: soft youthful sacred healer face, gentle eyes, long dark hair, young adult age impression, calm and protective temperament. Outfit: layered deep indigo healer robe with restrained silver and gold trim, matte cloth, readable sleeves, soft black boots. Fixed accessories: jade pendant at the right waist and small silver hair ornament.
+
+Reuse plan: this sheet will seed later scenes. Keep the front view as the stable identity anchor with unobstructed face, hair, body proportion, outfit, and pendant position. Optional expression variation may be added only if it does not change the face, robe structure, or pendant placement.
 
 Layout: 16:9 canvas, six clear panels, clean equal spacing, minimal labels or no labels, neutral background. Detail panels must be true closeups of costume and accessory details, not extra full-body figures.
 

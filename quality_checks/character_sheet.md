@@ -9,6 +9,9 @@ Applicable template: `templates/character_sheet.*`
 ## Must Pass
 
 - If the sheet is meant for recurring-character reuse, it includes at least one clean neutral identity view with unobstructed face and hair.
+- If `reuse_plan.will_seed_later_scenes` is true, the sheet names one stable identity anchor panel before optional expression, lighting, or action variations.
+- Optional variation panels serve a clear later-use purpose and do not replace front, side or 3/4, back, face closeup, costume detail, or accessory detail.
+- Variation panels state what may vary; identity, age impression, body proportion, hairstyle, costume structure, and fixed accessories stay locked.
 - Front, side or 3/4, and back views are the same character.
 - Face closeup preserves the same facial proportions.
 - Hair length, hair color, and main hairstyle are consistent across panels.
@@ -48,3 +51,4 @@ Applicable template: `templates/character_sheet.*`
 - Keep `layout.panels` explicit and avoid asking for extra panels in prose.
 - Use simple panel labels or no labels when text artifacts are a risk.
 - Add `clean background`, `no extra characters`, and `detail panels are true closeups` to quality checks.
+- Add expression, lighting, or action variations only when the sheet is meant to guide recurring scenes.

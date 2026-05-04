@@ -19,6 +19,7 @@ from lib.negative_selector import (
 )
 from lib.output_writer import make_output_dir, render_negative_prompt
 from lib.prompt_scorer import render_score_markdown, score_prompt_package
+from lib.reference_roles import normalize_reference_images
 from lib.spec_io import load_yaml, write_json, write_text
 
 
@@ -68,6 +69,8 @@ def main() -> None:
 
     spec = load_yaml(Path(args.spec))
     validate_spec(spec)
+    spec = dict(spec)
+    spec["reference_images"] = normalize_reference_images(spec)
 
     out_dir = make_output_dir(Path(args.out), str(spec["asset_set_name"]))
     selection = select_negative_modules(spec)

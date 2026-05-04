@@ -33,6 +33,25 @@
       "enum": ["draft", "standard", "high_fidelity", "character_lock_strict"],
       "description": "Planning hint for fidelity and quality checks; does not change runtime API behavior."
     },
+    "handoff_review": {
+      "type": "object",
+      "description": "Agent handoff notes for assumptions, missing inputs, risk flags, and the next review step.",
+      "properties": {
+        "assumptions": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "missing_inputs": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "risk_flags": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "next_review_step": { "type": "string" }
+      }
+    },
     "reference_lock": {
       "type": ["boolean", "object"],
       "description": "Identity and source authority rules."
