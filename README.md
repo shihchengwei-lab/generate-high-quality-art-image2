@@ -41,6 +41,10 @@ Root-level `docs/`, `templates/`, `schemas/`, `quality_checks/`, and `examples/`
 
 After syncing, restart Codex so the updated skill is picked up cleanly.
 
+If the skill does not appear after restart, check [docs/codex-issue-coverage.md](docs/codex-issue-coverage.md). Current public Codex issues make symlink-only skill installs and some repo-local discovery paths unreliable; this repo's supported Windows path is a materialized copy under `C:\Users\kk789\.codex\skills\generate-high-quality-art-image2`.
+
+If the generated image is inaccurate, noisy, cluttered, or visually dirty, check [docs/image-quality-issue-coverage.md](docs/image-quality-issue-coverage.md). That file documents the current mitigation path: stronger visual-accuracy prompts, clean-render constraints, concrete review checks, and targeted revision prompts. It does not claim prompt changes can guarantee perfect images.
+
 ## Structured prompt templates
 
 This repo also provides root-level Prompt-as-Code assets for planning, review, and agent handoff:
@@ -60,10 +64,12 @@ These assets are planning and debug resources. They do not replace the direct re
 For Codex / Agent use:
 
 1. Read `docs/skill-architecture.md` to understand the support-repo structure.
-2. Choose `character_locked_scene`, `character_sheet`, or `narrative_scene`.
-3. Fill the matching Markdown or JSON template in `templates/`.
-4. Use `docs/prompt-assembly.md` to assemble the final prompt.
-5. Review the matching file in `quality_checks/`.
+2. Read `docs/codex-issue-coverage.md` if you are checking whether the skill is actually installed, loaded, or affected by known Codex skill-discovery issues.
+3. Read `docs/image-quality-issue-coverage.md` if you are investigating inaccurate, noisy, cluttered, or dirty-looking generated output.
+4. Choose `character_locked_scene`, `character_sheet`, or `narrative_scene`.
+5. Fill the matching Markdown or JSON template in `templates/`.
+6. Use `docs/prompt-assembly.md` to assemble the final prompt.
+7. Review the matching file in `quality_checks/`.
 
 For ordinary image generation, use the installed skill or `.agents/skills/generate-high-quality-art-image2/SKILL.md`; the normal path is Codex built-in Image 2.0 generation through `image_gen`.
 
@@ -149,6 +155,7 @@ These are planning fields. They do not replace `execution_mode: direct/debug` in
 
 This project references external repos for structural methods only:
 
+- OpenAI Codex app image-generation docs: built-in Codex image generation is the normal host-native route for this repo.
 - `openai/openai-cookbook`: official image prompting, image editing, and high input fidelity concepts.
 - `ConardLi/garden-skills`: skill mode separation and host-native/advisor design.
 - `wuyoscar/gpt_image_2_skill`: Codex/Agent skill packaging and CLI/gallery separation.
@@ -158,6 +165,8 @@ This project references external repos for structural methods only:
 These sources inform schema-style prompts, dual Markdown/JSON templates, identity-first ordering, prompt assembly order, narrative decomposition, layout locking, quality modes, and failure-aware checks.
 
 It does not copy third-party case prompts, images, UI examples, poster examples, logo examples, product ad examples, or commercial visual content.
+
+The 2026-05-04 MIT-source refresh also checked current MIT-licensed GPT Image / Codex image skill repos. The useful lessons were narrow: keep skill packaging discoverable, keep prompt references load-on-demand, prefer intent-first and preserve/change-only prompt structure, and keep API-key-free host-native generation explicit. This repo does not adopt their prompt galleries, API CLIs, marketplace installers, symlink install paths, or provider wrappers.
 
 ## Core workflow
 
@@ -326,3 +335,5 @@ pip install -r requirements.txt
 ```
 
 Normal image generation uses Codex's built-in `image_gen` tool and does not require `OPENAI_API_KEY`.
+
+If a request is too large for practical host-native generation, do not silently switch to an API, CLI, or external provider. Ask the user whether to reduce scope or authorize a separate workflow.

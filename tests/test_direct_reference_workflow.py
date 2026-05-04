@@ -87,6 +87,9 @@ class DirectReferenceWorkflowTests(unittest.TestCase):
         self.assertIn("do not reproduce front/side/back views", prompt)
         self.assertIn("ignore image b background", prompt)
         self.assertIn("moonlit lushan summit", prompt)
+        self.assertIn("visual accuracy and clean render contract", prompt)
+        self.assertIn("prioritize literal accuracy over decorative complexity", prompt)
+        self.assertIn("clean controlled rendering", prompt)
         self.assertIn("role: identity_sheet", interpretation)
         self.assertIn("role: pose_composition", interpretation)
 
@@ -172,6 +175,8 @@ class DirectReferenceWorkflowTests(unittest.TestCase):
         self.assertIn("soft black boots, not barefoot", prompt)
         self.assertIn("negative prompt / custom avoid list", prompt)
         self.assertIn("hands and fingers", checklist)
+        self.assertIn("visual accuracy", checklist)
+        self.assertIn("render cleanliness", checklist)
         self.assertIn("bare feet / footwear", checklist)
         self.assertIn("lighting conflict", checklist)
         self.assertIn("scene conflict", checklist)

@@ -62,6 +62,7 @@ For normal user work:
 - If the user asks to modify an existing image, make sure that image is visible in the conversation context before treating it as an edit target.
 - Do not silently switch from the built-in path to local API, CLI, ComfyUI, LoRA, or other provider workflows.
 - If the user asks for multiple distinct assets or variants, make one generation call per distinct final image instead of merging unrelated deliverables into one prompt.
+- Do not use `OPENAI_API_KEY` or a repo-local API helper as a batch escape hatch. If a request is too large for practical host-native generation, pause and ask whether the user wants to change scope or authorize a different workflow.
 
 ## Output handling
 
@@ -84,6 +85,8 @@ When revising a generated result:
 - Change one targeted thing per revision when possible.
 - Preserve immutable identity before adjusting pose, attire, scene, lighting, or effects.
 - Do not add new style systems, providers, or pipeline steps just because one output failed.
+- When the generated image is visible to the agent and follow-up inspection is available, compare it against the quality checklist before deciding that a revision is done.
+- For inaccurate or noisy outputs, repair the concrete failure instead of adding generic quality words: use `visual_accuracy` for wrong subject/action/scene/props and `noise_artifacts` for speckle, muddy haze, dirty texture, edge halos, scratch-like lines, or chaotic micro-detail.
 
 When adding or revising constraints, keep only rules that preserve identity/source authority, capture the requested change, prevent a known failure, or create a reviewable output check. Delete or merge decorative and redundant instructions.
 
@@ -105,6 +108,13 @@ python .agents/skills/generate-high-quality-art-image2/scripts/build_prompt.py -
 ```
 
 Do not introduce a repo-local OpenAI Images API path for normal generation. Do not run helper scripts as a substitute for `image_gen`; they exist only to validate specs or export debug prompt packages.
+
+For targeted post-generation repair prompts:
+
+```bash
+python .agents/skills/generate-high-quality-art-image2/scripts/inspect_output.py --job-dir <job-dir> --issue visual_accuracy
+python .agents/skills/generate-high-quality-art-image2/scripts/inspect_output.py --job-dir <job-dir> --issue noise_artifacts
+```
 
 ## Reference image rules
 

@@ -57,6 +57,51 @@ class RootTemplateContractTests(unittest.TestCase):
         for loop_number in range(1, 6):
             self.assertIn(f"### Loop {loop_number}:", body)
 
+    def test_official_and_mit_source_refresh_is_documented(self) -> None:
+        body = (ROOT / "docs" / "external-repo-evaluation.md").read_text(encoding="utf-8")
+        self.assertIn("2026-05-04 Official And MIT Source Refresh", body)
+        self.assertIn("https://developers.openai.com/codex/app/features#image-generation", body)
+        self.assertIn("https://developers.openai.com/api/docs/guides/image-generation", body)
+        for repo in [
+            "wuyoscar/gpt_image_2_skill",
+            "UzenUPozitiv4ik/gpt-image-2-skill",
+            "jiangmuran/claude-image",
+            "wjb127/codex-image",
+        ]:
+            self.assertIn(repo, body)
+        self.assertIn("Built-in Codex image generation is the product path.", body)
+        self.assertIn("OPENAI_API_KEY", body)
+
+    def test_codex_issue_coverage_documents_loader_boundaries(self) -> None:
+        body = (ROOT / "docs" / "codex-issue-coverage.md").read_text(encoding="utf-8")
+        for issue in ["openai/codex#11314", "openai/codex#17344", "openai/codex#16012", "openai/codex#13015"]:
+            self.assertIn(issue, body)
+        self.assertIn("materialized installed copy", body)
+        self.assertIn("not a symlink-only wrapper", body)
+        self.assertIn("All online issues are fixed", body)
+        self.assertIn("not acceptable", body.lower())
+
+    def test_image_quality_issue_coverage_documents_accuracy_and_noise_boundaries(self) -> None:
+        body = (ROOT / "docs" / "image-quality-issue-coverage.md").read_text(encoding="utf-8")
+        self.assertIn("generated images that are inaccurate, noisy, cluttered, or visually dirty", body)
+        self.assertIn("visual-accuracy contract", body)
+        self.assertIn("clean-render contract", body)
+        self.assertIn("visual_accuracy", body)
+        self.assertIn("noise_artifacts", body)
+        self.assertIn("They do not prove visual quality.", body)
+
+    def test_readme_points_to_codex_issue_coverage_for_activation_failures(self) -> None:
+        body = (ROOT / "README.md").read_text(encoding="utf-8")
+        self.assertIn("docs/codex-issue-coverage.md", body)
+        self.assertIn("symlink-only skill installs", body)
+        self.assertIn("materialized copy", body)
+
+    def test_readme_points_to_image_quality_issue_coverage(self) -> None:
+        body = (ROOT / "README.md").read_text(encoding="utf-8")
+        self.assertIn("docs/image-quality-issue-coverage.md", body)
+        self.assertIn("inaccurate, noisy, cluttered, or visually dirty", body)
+        self.assertIn("does not claim prompt changes can guarantee perfect images", body)
+
     def test_direct_sample_specs_authorize_local_generation_by_default(self) -> None:
         for name in ["sample_spec.yaml", "sample_debug_spec.yaml"]:
             with self.subTest(sample=name):
@@ -95,6 +140,34 @@ class RootTemplateContractTests(unittest.TestCase):
         self.assertFalse(
             (ROOT / ".agents/skills/generate-high-quality-art-image2/scripts/generate_image2.py").exists()
         )
+
+    def test_runtime_skill_rejects_api_batch_escape_hatch(self) -> None:
+        body = (
+            ROOT
+            / ".agents/skills/generate-high-quality-art-image2/SKILL.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("Do not use `OPENAI_API_KEY` or a repo-local API helper as a batch escape hatch.", body)
+        self.assertIn("ask whether the user wants to change scope or authorize a different workflow", body)
+
+    def test_runtime_skill_documents_accuracy_and_noise_repair_issues(self) -> None:
+        body = (
+            ROOT
+            / ".agents/skills/generate-high-quality-art-image2/SKILL.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("For inaccurate or noisy outputs", body)
+        self.assertIn("--issue visual_accuracy", body)
+        self.assertIn("--issue noise_artifacts", body)
+
+    def test_repo_skill_path_is_not_a_symlink(self) -> None:
+        self.assertFalse((ROOT / ".agents" / "skills").is_symlink())
+        self.assertFalse((ROOT / ".agents/skills/generate-high-quality-art-image2").is_symlink())
+        self.assertFalse((ROOT / ".agents/skills/generate-high-quality-art-image2/SKILL.md").is_symlink())
+
+    def test_sync_script_does_not_create_symlink_installs(self) -> None:
+        body = (ROOT / "tools" / "sync_local_skill.ps1").read_text(encoding="utf-8").lower()
+        self.assertNotIn("symboliclink", body)
+        self.assertNotIn("mklink", body)
+        self.assertIn("robocopy", body)
 
     def test_build_prompt_writes_resolved_reference_paths(self) -> None:
         tmp = Path(tempfile.mkdtemp())
@@ -204,6 +277,35 @@ class RootTemplateContractTests(unittest.TestCase):
         checklist = (job_dir / "quality_checklist.md").read_text(encoding="utf-8")
         self.assertIn("Result image exists: True", checklist)
         self.assertIn("Result images: result.webp", checklist)
+
+    def test_inspect_output_can_write_accuracy_and_noise_revision_prompt(self) -> None:
+        tmp = Path(tempfile.mkdtemp())
+        job_dir = tmp / "job"
+        job_dir.mkdir()
+        (job_dir / "final_prompt.txt").write_text("Original prompt context", encoding="utf-8")
+        script = ROOT / ".agents/skills/generate-high-quality-art-image2/scripts/inspect_output.py"
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(script),
+                "--job-dir",
+                str(job_dir),
+                "--issue",
+                "visual_accuracy",
+                "--issue",
+                "noise_artifacts",
+            ],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        revision = (job_dir / "revision_prompt.txt").read_text(encoding="utf-8")
+        checklist = (job_dir / "quality_checklist.md").read_text(encoding="utf-8")
+        self.assertIn("correct literal accuracy", revision)
+        self.assertIn("remove speckle", revision)
+        self.assertIn("Literal subject/action/scene accuracy acceptable", checklist)
+        self.assertIn("No visible speckle/noise or muddy haze over the subject", checklist)
 
 
 if __name__ == "__main__":

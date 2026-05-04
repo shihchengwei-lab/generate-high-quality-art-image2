@@ -117,12 +117,29 @@ def _attire_block(spec: dict[str, Any], subject: dict[str, Any]) -> list[str]:
 def _quality_checks_block() -> list[str]:
     return [
         "Quality checks before generation:",
+        "- visual accuracy: subject, action, attire, props, scene, and lighting match the user text and reference roles.",
+        "- render cleanliness: clean edges, stable gradients, controlled particles, and no unwanted noise, speckle, scratches, haze, or dirty texture.",
         "- hands and fingers: readable hands, correct finger count, no fused or extra fingers.",
         "- bare feet / footwear: follow the prompt exactly; do not switch barefoot to shoes or shoes to barefoot unless requested.",
         "- lighting conflict: keep one coherent light direction and avoid mixing incompatible light sources.",
         "- scene conflict: use the user-selected scene only; do not import background, props, palette, or setting from a pose reference.",
         "- variant scope: if several final images are requested, keep each image to one clear change purpose and repeat the identity lock.",
         "- revision scope: when revising, change one targeted failure at a time while preserving identity and reference authority.",
+    ]
+
+
+def _accuracy_cleanliness_block(spec: dict[str, Any]) -> list[str]:
+    model = spec.get("model", {}) if isinstance(spec.get("model"), dict) else {}
+    quality = str(model.get("quality", "high"))
+    size = str(model.get("size", spec.get("size", "1024x1536")))
+    return [
+        "Visual accuracy and clean render contract:",
+        "- prioritize literal accuracy over decorative complexity: match the requested subject, scene, pose, attire, props, mood, and story moment.",
+        "- keep one readable subject hierarchy; do not add unrequested secondary characters, props, symbols, labels, or environment elements.",
+        "- use clean controlled rendering: stable edges, smooth gradients, coherent material transitions, and restrained texture density.",
+        "- keep atmospheric particles, glow, incense, dust, rain, snow, and magic effects sparse enough that face, hands, silhouette, and main gesture stay readable.",
+        "- do not solve weak output by adding more style adjectives; simplify the scene, clarify the source authority, and revise one visible failure at a time.",
+        f"- requested quality setting: {quality}; requested size: {size}. Use higher fidelity for final character or identity-sensitive art.",
     ]
 
 
@@ -185,6 +202,8 @@ def build_hidden_prompt(spec: dict[str, Any], negative_blocks: dict[str, dict[st
     if len(scene_lines) == 1:
         scene_lines.append("- environment: coherent user-specified scene, not copied from Image B")
     lines.extend([""] + scene_lines)
+
+    lines.extend([""] + _accuracy_cleanliness_block(spec))
 
     lines.extend(["", "Rendering style:"])
     for key in ["rendering", "mood", "palette", "detail_density"]:
@@ -301,6 +320,8 @@ def build_quality_checklist() -> str:
 - attire / outfit changes do not alter face identity, age impression, body proportion, hairstyle, or character temperament
 
 ## Character-specific quality checks
+- Visual accuracy checked against user text and reference roles
+- Render cleanliness checked for noise, speckle, scratches, dirty texture, edge halos, and unwanted haze
 - Hands and fingers checked
 - Bare feet / footwear instruction checked
 - Lighting conflict checked

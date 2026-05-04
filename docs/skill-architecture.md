@@ -144,6 +144,8 @@ The installed copy is intentionally smaller than the repo:
 - include: `SKILL.md`, `assets/`, `references/`, `scripts/`
 - exclude: root `docs/`, `templates/`, `schemas/`, `quality_checks/`, `examples/`, caches, and generated outputs
 
+See `docs/codex-issue-coverage.md` for the current public Codex issue coverage. This repo mitigates known skill-discovery issues with materialized local files; it does not fix upstream loader behavior.
+
 After syncing, restart Codex before relying on the updated skill trigger text.
 
 ## Current Repo Structure

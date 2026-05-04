@@ -35,6 +35,68 @@ Methods intentionally not adopted:
 - Symlink-only installed skills, because current Codex loader behavior can skip symlinked `SKILL.md` files.
 - Third-party prompt text or demo image content.
 
+## 2026-05-04 Official And MIT Source Refresh
+
+This refresh checked current official OpenAI guidance and MIT-licensed GitHub repos against the current project direction: this skill should use Codex built-in image generation, not a repo-local or external API path.
+
+Official sources:
+
+| Source | Current guidance used | Local decision |
+|---|---|---|
+| OpenAI Codex app image generation docs, <https://developers.openai.com/codex/app/features#image-generation> | Codex can generate or edit images directly in a thread through built-in image generation using `gpt-image-2`; the docs describe `OPENAI_API_KEY` API generation as a separate large-batch option. | Keep host-native Codex `image_gen` as the normal path. Do not add an API-key fallback just because a request is large. |
+| OpenAI Image generation guide, <https://developers.openai.com/api/docs/guides/image-generation> | GPT Image supports text generation, edits, reference-image workflows, multi-turn edits, quality/size controls, and known limits around consistency and composition. For `gpt-image-2`, image inputs are already processed at high fidelity and `input_fidelity` should be omitted. | Keep reference roles, preserve/change-only language, quality modes, and explicit checks. Do not implement the API guide as local runtime code. |
+
+MIT repo search command used on 2026-05-04:
+
+```powershell
+gh search repos "gpt image skill license:mit" --limit 20 --json fullName,description,url,license,stargazersCount,updatedAt
+```
+
+MIT-licensed method references checked:
+
+| Repo | License evidence | Useful method | Local decision |
+|---|---|---|---|
+| `wuyoscar/gpt_image_2_skill`, <https://github.com/wuyoscar/gpt_image_2_skill> | GitHub reports MIT license; README exposes Codex install, skill folder, references, CLI, and gallery split. | Discoverable skill packaging, load-on-demand references, and clear separation between skill files, docs, examples, and CLI. | Keep packaging lessons. Reject gallery import, prompt copying, CLI/API runtime, and symlink install as a default. |
+| `UzenUPozitiv4ik/gpt-image-2-skill`, <https://github.com/UzenUPozitiv4ik/gpt-image-2-skill> | GitHub reports MIT license. | Minimal prompt-structuring skill; emphasizes keeping the user's intent and only adding non-conflicting recommendations. | Keep the "structure without changing intent" lesson. Reject broad photo/ad/meme scope and prompt text reuse. |
+| `jiangmuran/claude-image`, <https://github.com/jiangmuran/claude-image> | GitHub reports MIT license. | Intent-first prompt order, preserve/change-only edits, visual self-verification, zero-dependency validation, and upfront size checks. | Keep intent-first and checklist-before-done discipline. Reject API keys, alternate base URLs, parallel API batching, and provider wrapper code. |
+| `wjb127/codex-image`, <https://github.com/wjb127/codex-image> | GitHub reports MIT license. | API-key-free framing through Codex-hosted image generation and a small `SKILL.md`-first repo shape. | Keep the no-API-key user story. Reject shelling out to `codex exec` from this repo or adding a wrapper command. |
+
+Resulting boundary:
+
+- Built-in Codex image generation is the product path.
+- Local scripts only validate specs or export debug prompt packages.
+- `OPENAI_API_KEY`, local OpenAI SDK calls, `codex exec` wrappers, external base URLs, and multi-provider adapters stay out of runtime scope unless the user explicitly asks for a separate workflow.
+- MIT repositories can inform structure, naming, validation, and handoff patterns; they do not justify importing prompt galleries, generated images, or API backends.
+
+## 2026-05-04 Image Accuracy And Noise Refresh
+
+This refresh checked the user's intended issue class: inaccurate outputs, noisy rendering, dirty texture, clutter, and visual artifacts.
+
+Official source evidence:
+
+- OpenAI's Image generation guide explicitly lists limitations around recurring-character consistency and precise composition control.
+- OpenAI's GPT Image prompting guide recommends structured prompt order, concrete visual details, targeted quality cues, explicit preserve/change-only constraints, and small single-change iteration.
+- For `gpt-image-2`, `input_fidelity` is not a tunable mitigation because image inputs are already processed at high fidelity.
+
+Public GitHub search result:
+
+- `gh search issues "gpt-image-2 noise artifacts"` returned no strong direct issue matches on 2026-05-04.
+- `gh search issues "gpt-image-2 character consistency"` returned no strong direct issue matches on 2026-05-04.
+- This absence is not evidence that the problem does not exist. It only means this pass did not find a high-signal public GitHub issue thread specific to `gpt-image-2` noise artifacts.
+
+Local adoption:
+
+- Add a positive visual-accuracy and clean-render contract to the runtime prompt before style and negative prompts.
+- Keep negative modules as support, not as the primary fix.
+- Add inspection issues for `visual_accuracy` and `noise_artifacts` so revisions can target the observed failure instead of adding generic quality words.
+- Expand the quality checklist with visual accuracy, noise, speckle, muddy haze, texture density, and material-transition checks.
+
+Boundary:
+
+- Dry-run tests verify prompt and revision-package behavior only.
+- Real visual improvement still requires generated before/after images and checklist-based review.
+- The repo still does not add external API generation, SDK wrappers, or a required VLM judge.
+
 ## P1: Immediate Method Sources
 
 ### openai/openai-cookbook
