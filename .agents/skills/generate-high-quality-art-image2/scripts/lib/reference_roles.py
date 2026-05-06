@@ -2,209 +2,284 @@ from __future__ import annotations
 
 from typing import Any
 
-IDENTITY_USE_ONLY = [
-    "face identity",
-    "facial feature proportions",
-    "hairstyle and hair color",
-    "body proportion",
-    "age impression",
-    "base costume design",
-    "character temperament",
-]
 
-IDENTITY_IGNORE = [
-    "multi-view layout",
-    "front/side/back presentation",
-    "turnaround sheet formatting",
-    "model sheet formatting",
-    "design sheet formatting",
-    "panel layout",
-    "labels",
-    "text",
-    "background",
-    "sheet grid",
-]
+REFERENCE_ROLES = (
+    "identity",
+    "style",
+    "composition_pose",
+    "costume_object",
+    "edit_target",
+)
 
-POSE_USE_ONLY = [
-    "pose",
-    "camera angle",
-    "framing",
-    "body gesture",
-    "composition rhythm",
-]
+ROLE_LABELS = {
+    "identity": "identity reference",
+    "style": "style reference",
+    "composition_pose": "composition / pose reference",
+    "costume_object": "costume / object reference",
+    "edit_target": "edit target reference",
+}
 
-POSE_IGNORE = [
-    "background",
-    "scene",
-    "lighting",
-    "color palette",
-    "effects",
-    "props",
-    "costume details",
-    "alternate face identity",
-    "alternate age impression",
-    "alternate hairstyle",
-]
-
-ROLE_ALIASES = {
-    "primary_identity_costume": "identity_sheet",
-    "primary_identity": "identity_sheet",
-    "identity": "identity_sheet",
-    "identity_reference": "identity_sheet",
-    "character_sheet": "identity_sheet",
-    "model_sheet": "identity_sheet",
-    "secondary_pose_lighting_composition": "pose_composition",
-    "secondary_pose_composition": "pose_composition",
-    "pose": "pose_composition",
-    "pose_reference": "pose_composition",
-    "composition_reference": "pose_composition",
+ROLE_DEFINITIONS = {
+    "identity": {
+        "use_only": [
+            "recognizable identity traits",
+            "face structure or stable subject features",
+            "age impression",
+            "body proportion when visible",
+            "hair or signature subject traits",
+            "presence or temperament named by the user",
+        ],
+        "ignore": [
+            "background",
+            "scene",
+            "lighting",
+            "layout",
+            "labels",
+            "text",
+            "unrequested clothing or object details",
+        ],
+    },
+    "style": {
+        "use_only": [
+            "line language",
+            "color handling",
+            "shading approach",
+            "material treatment",
+            "render density",
+            "overall visual language",
+        ],
+        "ignore": [
+            "specific subject",
+            "original scene",
+            "story content",
+            "composition",
+            "objects not requested by the user",
+        ],
+    },
+    "composition_pose": {
+        "use_only": [
+            "framing",
+            "camera angle",
+            "crop",
+            "pose or spatial arrangement",
+            "subject placement",
+            "image rhythm",
+        ],
+        "ignore": [
+            "identity",
+            "style",
+            "scene",
+            "lighting",
+            "palette",
+            "props",
+            "costume or object details",
+        ],
+    },
+    "costume_object": {
+        "use_only": [
+            "named clothing design",
+            "accessories",
+            "props",
+            "object silhouette",
+            "material structure",
+            "pattern or ornament construction",
+        ],
+        "ignore": [
+            "identity",
+            "scene",
+            "camera",
+            "lighting",
+            "background",
+            "unrequested mood or story",
+        ],
+    },
+    "edit_target": {
+        "use_only": [
+            "target image to modify",
+            "unchanged regions to preserve",
+            "existing placement and spatial context",
+            "user-specified local edit area",
+            "user-specified global edit scope",
+        ],
+        "ignore": [
+            "unrequested redesign",
+            "unrequested identity change",
+            "unrequested style change",
+            "unrequested background replacement",
+            "new unrelated objects",
+        ],
+    },
 }
 
 
-def normalize_reference_role(role: str | None, index: int) -> str:
-    if role:
-        normalized = ROLE_ALIASES.get(str(role).strip().lower(), str(role).strip().lower())
-        if normalized in {"identity_sheet", "pose_composition"}:
-            return normalized
-    if index == 0:
-        return "identity_sheet"
-    if index == 1:
-        return "pose_composition"
-    raise ValueError("This skill supports exactly one or two reference images.")
+def _clean_list(value: Any) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return [str(item) for item in value if str(item).strip()]
+    return [str(value)] if str(value).strip() else []
+
+
+def valid_role_list() -> str:
+    return ", ".join(REFERENCE_ROLES)
+
+
+def validate_reference_role(role: Any) -> str:
+    if not role:
+        raise ValueError(f"reference role is required; use one of: {valid_role_list()}")
+    role_text = str(role).strip()
+    if role_text not in ROLE_DEFINITIONS:
+        raise ValueError(f"unsupported reference role '{role_text}'; use one of: {valid_role_list()}")
+    return role_text
+
+
+def reference_role_label(role: str) -> str:
+    return ROLE_LABELS[role]
 
 
 def normalize_reference_images(spec: dict[str, Any]) -> list[dict[str, Any]]:
     refs = spec.get("reference_images", [])
+    if refs is None:
+        refs = []
     if not isinstance(refs, list):
         raise ValueError("reference_images must be a list.")
-    if len(refs) not in (1, 2):
-        raise ValueError("This skill supports exactly one or two reference images.")
+    if len(refs) > 5:
+        raise ValueError("This skill supports at most five reference images.")
 
     normalized: list[dict[str, Any]] = []
-    for index, ref in enumerate(refs):
+    for index, ref in enumerate(refs, start=1):
         if not isinstance(ref, dict):
             raise ValueError("Each reference image must be a mapping.")
+        if not ref.get("path"):
+            raise ValueError(f"reference_images[{index}] must include path.")
+        role = validate_reference_role(ref.get("role"))
+        role_def = ROLE_DEFINITIONS[role]
         item = dict(ref)
-        role = normalize_reference_role(item.get("role"), index)
         item["role"] = role
-        if role == "identity_sheet":
-            item["use_only"] = item.get("use_only") or IDENTITY_USE_ONLY
-            item["ignore"] = sorted(set((item.get("ignore") or []) + IDENTITY_IGNORE))
-        elif role == "pose_composition":
-            item["use_only"] = item.get("use_only") or POSE_USE_ONLY
-            item["ignore"] = sorted(set((item.get("ignore") or []) + POSE_IGNORE))
+        item["role_label"] = reference_role_label(role)
+        item["use_only"] = _clean_list(item.get("use_only")) or list(role_def["use_only"])
+        item["ignore"] = _clean_list(item.get("ignore")) or list(role_def["ignore"])
         normalized.append(item)
-
-    if len(normalized) == 2 and normalized[0]["role"] != "identity_sheet":
-        normalized[0]["role"] = "identity_sheet"
-        normalized[0]["use_only"] = IDENTITY_USE_ONLY
-        normalized[0]["ignore"] = sorted(set(normalized[0].get("ignore", []) + IDENTITY_IGNORE))
-    if len(normalized) == 2 and normalized[1]["role"] != "pose_composition":
-        normalized[1]["role"] = "pose_composition"
-        normalized[1]["use_only"] = POSE_USE_ONLY
-        normalized[1]["ignore"] = sorted(set(normalized[1].get("ignore", []) + POSE_IGNORE))
     return normalized
 
 
-def apply_reference_defaults(spec: dict[str, Any]) -> dict[str, Any]:
+def with_normalized_references(spec: dict[str, Any]) -> dict[str, Any]:
     updated = dict(spec)
     updated["reference_images"] = normalize_reference_images(spec)
-    updated.setdefault("workflow_type", "direct_reference_generation")
-    updated.setdefault("execution_mode", "direct")
-    updated.setdefault("debug_export_prompt", False)
-    updated.setdefault(
-        "reference_priority",
-        {
-            "identity_source": "image_1",
-            "pose_source": "image_2" if len(updated["reference_images"]) == 2 else "image_1",
-            "scene_source": "user_text",
-            "lighting_source": "user_text",
-            "atmosphere_source": "user_text",
-        },
-    )
     return updated
+
+
+def _role_lines(refs: list[dict[str, Any]]) -> list[str]:
+    if not refs:
+        return ["- No reference images were provided. Follow the user text and the explicit Preserve / Change / Ignore contract."]
+
+    lines: list[str] = []
+    for index, ref in enumerate(refs, start=1):
+        label = f"Reference {index}"
+        lines.append(f"- {label} = {reference_role_label(ref['role'])} only.")
+        lines.append(f"  Use only: {', '.join(ref['use_only'])}.")
+        lines.append(f"  Ignore: {', '.join(ref['ignore'])}.")
+    return lines
 
 
 def reference_priority_block(spec: dict[str, Any]) -> str:
     refs = normalize_reference_images(spec)
-    if len(refs) == 1:
-        return """Reference authority:
-- Image A is the identity sheet source.
-- Use Image A only for face identity, facial proportions, hairstyle, hair color, body proportion, age impression, base costume design, and character temperament.
-- Do not reproduce any model sheet, turnaround sheet, design sheet, labels, front/side/back views, panel layout, or sheet formatting from Image A.
-- User text is the highest authority for scene, lighting, time, atmosphere, effects, and story moment."""
-    return """Reference authority:
-- Image A = identity sheet source only.
-- Image B = pose / composition source only.
-- User text = highest authority for scene, lighting, time, atmosphere, effects, and story moment.
-
-Image A use-only:
-- face identity, facial feature proportions, hairstyle and hair color, body proportion, age impression, base costume design, character temperament.
-
-Image A ignore:
-- multi-view layout, model sheet formatting, turnaround sheet formatting, design sheet formatting, panel layout, labels, text, front/side/back presentation.
-
-Image B use-only:
-- pose, camera angle, framing, body gesture, composition rhythm.
-
-Image B ignore:
-- background, scene, lighting, color palette, effects, props, costume details, alternate identity.
-
-Conflict rule:
-- Image A wins for identity.
-- Image B wins only for pose / composition.
-- User text wins for scene / lighting / atmosphere."""
+    lines = [
+        "Reference authority:",
+        "- User text is the highest authority for the requested subject, output form, scene, lighting, and requested changes.",
+        "- A reference image controls only its declared role.",
+        "- Details outside a reference role must be ignored unless the user explicitly asks for them.",
+        "",
+        "Reference roles:",
+    ]
+    lines.extend(_role_lines(refs))
+    lines.extend(
+        [
+            "",
+            "Role boundaries:",
+            "- identity controls identity only.",
+            "- style controls visual language only.",
+            "- composition_pose controls framing, camera, pose, arrangement, and placement only.",
+            "- costume_object controls named clothing, object, prop, material, and ornament details only.",
+            "- edit_target preserves unchanged regions and changes only the requested area or attribute.",
+        ]
+    )
+    return "\n".join(lines)
 
 
-def anti_sheet_block() -> str:
-    return """Anti-sheet constraints:
-- Do not generate a model sheet, turnaround sheet, design sheet, reference sheet, or multi-panel layout.
-- Do not reproduce front/side/back views.
-- Do not include labels, captions, UI, sheet grids, or reference annotations.
-- Generate one finished illustration only."""
-
-
-def anti_takeover_block() -> str:
-    return """Anti-reference-background-takeover constraints:
-- Use Image B only for pose, framing, camera angle, body gesture, and composition rhythm.
-- Ignore Image B background, scene, lighting, color palette, effects, props, and costume details.
-- The user's written scene description overrides Image B environment completely."""
+def reference_contamination_block(spec: dict[str, Any]) -> str:
+    refs = normalize_reference_images(spec)
+    lines = [
+        "Reference contamination guards:",
+        "- Do not treat any reference as an all-purpose source.",
+        "- Do not copy reference background, lighting, layout, text, props, subject, or style unless that dimension is assigned by role or requested by the user.",
+    ]
+    roles = {ref["role"] for ref in refs}
+    if "identity" in roles:
+        lines.append("- Identity references must not transfer their background, layout, labels, lighting, or unrelated object details.")
+    if "style" in roles:
+        lines.append("- Style references must not transfer their original subject, scene, story, or composition.")
+    if "composition_pose" in roles:
+        lines.append("- Composition / pose references must not transfer identity, scene, lighting, palette, props, or object details.")
+    if "costume_object" in roles:
+        lines.append("- Costume / object references must not transfer identity, scene, camera, lighting, or background.")
+    if "edit_target" in roles:
+        lines.append("- Edit targets must keep unchanged regions stable and avoid unrequested redesign.")
+    return "\n".join(lines)
 
 
 def build_reference_interpretation(spec: dict[str, Any]) -> str:
     refs = normalize_reference_images(spec)
     lines = ["# Reference Interpretation", "", f"Reference count: {len(refs)}", ""]
-    labels = ["Image A", "Image B"]
-    for index, ref in enumerate(refs):
+    if not refs:
         lines.extend(
             [
-                f"## {labels[index]}",
+                "No references supplied.",
+                "",
+                "Priority:",
+                "- User text and Preserve / Change / Ignore define the full contract.",
+            ]
+        )
+        return "\n".join(lines).rstrip() + "\n"
+
+    for index, ref in enumerate(refs, start=1):
+        lines.extend(
+            [
+                f"## Reference {index}",
                 "",
                 f"Path: {ref.get('path', '')}",
                 f"Role: {ref['role']}",
+                f"Role label: {ref['role_label']}",
                 "",
                 "Use only:",
                 "",
             ]
         )
-        lines.extend(f"- {item}" for item in ref.get("use_only", []))
+        lines.extend(f"- {item}" for item in ref["use_only"])
         lines.extend(["", "Ignore:", ""])
-        lines.extend(f"- {item}" for item in ref.get("ignore", []))
+        lines.extend(f"- {item}" for item in ref["ignore"])
         lines.append("")
 
     lines.extend(
         [
             "## Priority",
             "",
-            "- Image A controls identity only.",
-            "- Image B controls pose / composition only.",
-            "- User text controls scene, lighting, time, atmosphere, effects, and story moment.",
-            "",
-            "## Hard constraints",
-            "",
-            "- Single finished illustration only.",
-            "- No character sheet, model sheet, turnaround sheet, multi-panel layout, labels, or text.",
-            "- Do not transfer Image B background, lighting, palette, props, scene, or effects.",
+            "- User text wins over unassigned reference details.",
+            "- No reference image is an all-purpose control source.",
+            "- Preserve / Change / Ignore must stay explicit before prompt assembly.",
         ]
     )
     return "\n".join(lines).rstrip() + "\n"
+
+
+__all__ = [
+    "REFERENCE_ROLES",
+    "ROLE_DEFINITIONS",
+    "build_reference_interpretation",
+    "normalize_reference_images",
+    "reference_contamination_block",
+    "reference_priority_block",
+    "valid_role_list",
+    "validate_reference_role",
+    "with_normalized_references",
+]

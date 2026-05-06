@@ -10,6 +10,7 @@ from lib.hidden_prompt_builder import (
     build_generation_settings,
     build_hidden_prompt,
     build_quality_checklist,
+    build_quality_preflight,
     build_reference_interpretation,
 )
 from lib.negative_selector import (
@@ -19,26 +20,27 @@ from lib.negative_selector import (
 )
 from lib.output_writer import make_output_dir, render_negative_prompt, write_prompt_package
 from lib.prompt_scorer import render_score_markdown, score_prompt_package
-from lib.reference_roles import apply_reference_defaults
+from lib.reference_roles import with_normalized_references
 from lib.spec_contract import resolve_reference_paths, validate_direct_spec
 from lib.spec_io import load_yaml, write_json, write_text
 
 
-def _write_debug_artifacts(
-    out_dir: Path,
-    prompt: str,
-    generation_settings: dict[str, Any],
-    negative_prompt: str,
-    negative_selection: str,
-    reference_interpretation: str,
-) -> None:
+def _write_debug_artifacts(out_dir: Path, spec: dict[str, Any], generation_settings: dict[str, Any]) -> None:
+    selection = select_negative_modules(spec)
+    negative_blocks = selected_negative_blocks(selection)
+    prompt = build_hidden_prompt(spec, negative_blocks)
+    negative_prompt = render_negative_prompt(negative_blocks)
+    reference_interpretation = build_reference_interpretation(spec)
+    quality_preflight = build_quality_preflight(spec)
+
     write_prompt_package(
         out_dir=out_dir,
         final_prompt=prompt,
         negative_prompt=negative_prompt,
-        negative_selection=negative_selection,
+        negative_selection=explain_negative_selection(spec, selection),
         reference_interpretation=reference_interpretation,
         generation_settings=generation_settings,
+        quality_preflight=quality_preflight,
         quality_checklist=build_quality_checklist(),
     )
     score = score_prompt_package(
@@ -52,22 +54,21 @@ def _write_debug_artifacts(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Validate a reference-driven built-in Image 2.0 generation spec."
-    )
+    parser = argparse.ArgumentParser(description="Validate a v2 Image 2.0 direct/debug generation spec.")
     parser.add_argument("--spec", required=True, help="Path to YAML spec.")
     parser.add_argument("--out", default="outputs", help="Output base directory.")
-    parser.add_argument("--dry-run", action="store_true", help="Build internal artifacts without local image generation.")
+    parser.add_argument("--dry-run", action="store_true", help="Build validation artifacts without local image generation.")
     args = parser.parse_args()
 
     spec_path = Path(args.spec)
-    spec = apply_reference_defaults(load_yaml(spec_path))
+    spec = load_yaml(spec_path)
     validate_direct_spec(spec)
+    spec = with_normalized_references(spec)
 
     if bool(spec.get("run_generation", True)) and not args.dry_run:
         raise SystemExit(
-            "This local helper does not call image_gen. Use the Codex built-in image_gen tool "
-            "for generation, or rerun this helper with --dry-run for validation/debug artifacts."
+            "This local helper does not call image_gen. Use Codex built-in image_gen for generation, "
+            "or rerun with --dry-run for validation/debug artifacts."
         )
 
     execution_mode = str(spec.get("execution_mode", "direct")).lower()
@@ -78,33 +79,20 @@ def main() -> None:
         raise SystemExit("execution_mode must be 'direct' or 'debug'.")
 
     out_dir = make_output_dir(Path(args.out), str(spec["asset_name"]))
-    selection = select_negative_modules(spec)
-    negative_blocks = selected_negative_blocks(selection)
-    prompt = build_hidden_prompt(spec, negative_blocks)
-    negative_prompt = render_negative_prompt(negative_blocks)
-    reference_interpretation = build_reference_interpretation(spec)
     generation_settings = build_generation_settings(spec)
+    generation_settings["execution_mode"] = execution_mode
     generation_settings["debug_export_prompt"] = debug_export_prompt
     generation_settings["dry_run"] = args.dry_run
-    reference_paths = resolve_reference_paths(spec, spec_path)
-    generation_settings["resolved_reference_paths"] = [str(path) for path in reference_paths]
+    generation_settings["resolved_reference_paths"] = [
+        str(path) for path in resolve_reference_paths(spec, spec_path)
+    ]
 
     write_json(out_dir / "generation_settings.json", generation_settings)
+    write_text(out_dir / "direct_generation_summary.md", build_direct_summary(spec, args.dry_run))
 
     if debug_export_prompt:
-        _write_debug_artifacts(
-            out_dir=out_dir,
-            prompt=prompt,
-            generation_settings=generation_settings,
-            negative_prompt=negative_prompt,
-            negative_selection=explain_negative_selection(spec, selection),
-            reference_interpretation=reference_interpretation,
-        )
+        _write_debug_artifacts(out_dir, spec, generation_settings)
 
-    write_text(
-        out_dir / "direct_generation_summary.md",
-        build_direct_summary(spec, args.dry_run),
-    )
     print(f"Direct generation job prepared: {out_dir}")
     if args.dry_run:
         print("Dry run complete. No local image generation was attempted.")

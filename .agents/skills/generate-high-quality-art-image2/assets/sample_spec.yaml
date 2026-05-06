@@ -1,98 +1,43 @@
-asset_name: "example_deity_card"
-workflow_type: "direct_reference_generation"
-execution_mode: "direct"
+asset_name: example_general_image
+task_type: general_image
+execution_mode: direct
 debug_export_prompt: false
-intended_use: "mobile game deity card illustration"
-image_type: "deity_card"
 run_generation: true
-
-model:
-  name: "gpt-image-2"
-  quality: "high"
-  size: "1024x1536"
-  output_format: "png"
-
-reference_images:
-  - path: "./refs/identity_sheet.png"
-    role: "identity_sheet"
-    use_only:
-      - "face identity"
-      - "hairstyle"
-      - "body proportion"
-      - "age impression"
-      - "base costume design"
-      - "character temperament"
-    ignore:
-      - "multi-view layout"
-      - "front/side/back presentation"
-      - "labels"
-      - "sheet formatting"
-      - "text"
-      - "panel layout"
-  - path: "./refs/pose_reference.png"
-    role: "pose_composition"
-    use_only:
-      - "pose"
-      - "camera angle"
-      - "framing"
-      - "body gesture"
-      - "composition rhythm"
-    ignore:
-      - "background"
-      - "lighting"
-      - "color palette"
-      - "scene"
-      - "props"
-      - "effects"
-      - "costume details"
-
-reference_priority:
-  identity_source: "image_1"
-  pose_source: "image_2"
-  scene_source: "user_text"
-  lighting_source: "user_text"
-  atmosphere_source: "user_text"
-
+intended_use: general high-quality finished image
+image_type: pure_text_image
+reference_images: []
+preserve:
+  - requested subject and output intent
+  - clean visual hierarchy
+change:
+  - create the requested scene from user text
+  - choose task-appropriate composition and lighting
+ignore:
+  - unrequested text, logos, watermarks, UI, and extra subjects
+  - hidden reference assumptions
 subject:
-  description: "same character as image 1, preserved as a youthful sacred healer"
-  personality:
-    - "gentle"
-    - "sacred"
-    - "emotionally grounded"
-  must_keep:
-    - "same face identity as image 1"
-    - "same age impression as image 1"
-    - "same body proportion as image 1"
-    - "same base costume identity as image 1"
-
+  description: a quiet glass teapot on a wooden table after rain
+  details:
+    - transparent glass body
+    - warm tea color
+    - small condensation beads
 composition:
-  framing: "full-body upright card illustration"
-  camera: "three-quarter front view"
-  pose: "use image 2 pose and body gesture only"
-  layout: "centered single-character composition"
-  aspect_ratio: "2:3"
-
+  framing: medium close-up
+  camera: eye-level
+  layout: single finished image
+  aspect_ratio: 4:3
 scene_direction:
-  description: "moonlit Lushan summit at night, sacred quiet atmosphere"
-  lighting: "cool moonlight mixed with soft sacred silver glow"
-  environment: "mountain shrine summit under night sky"
-  atmosphere: "solemn, protective, emotionally grounded"
-  effects: "subtle silver motes, restrained sacred aura"
-  story_moment: "a calm protective deity moment"
-
+  environment: calm kitchen window setting
+  lighting: soft overcast daylight
+  atmosphere: quiet, clean, contemplative
 style_direction:
-  rendering: "polished 2D anime game card illustration"
-  mood: "solemn, sacred, protective"
-  palette: "cool moonlight, soft silver glow, restrained gold accents"
-  detail_density: "high quality but controlled, no clutter"
-
-constraints:
-  single_finished_illustration_only: true
-  forbid_character_sheet_output: true
-  forbid_multi_panel_layout: true
-  forbid_reference_background_takeover: true
-  preserve_identity_from_image_1: true
-  use_pose_from_image_2_only: true
-
+  rendering: polished naturalistic illustration
+  palette: warm amber tea with cool grey window light
+  detail_density: controlled
+model:
+  name: gpt-image-2
+  quality: high
+  size: 1536x1024
+  output_format: png
 negative_profile:
-  mode: "auto"
+  mode: auto

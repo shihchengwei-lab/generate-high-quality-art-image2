@@ -1,29 +1,20 @@
-Create a high-quality single-image illustration for a mobile game deity card.
+Create one high-quality Image 2.0 output for reference-guided high-quality finished image.
+Task type: reference_guided_image.
+Image type: reference_guided_image.
 
-Use reference image 1 as the primary identity and costume reference. Preserve the face structure, hairstyle, age impression, calm divine expression, core ceremonial robe silhouette, symbolic identity, and main warm gold palette.
+Reference authority:
+- Reference 1 = style reference only.
+- Reference 2 = costume / object reference only.
+- User text controls subject, output form, scene, lighting, and requested changes.
 
-Use reference image 2 only as the secondary reference for pose, camera angle, lighting mood, composition, and environmental atmosphere. Do not overwrite the identity, face, age impression, hairstyle, symbolic identity, or costume design from reference image 1.
+Preserve / Change / Ignore before prompt assembly:
+- Preserve: line language and restrained color handling from Reference 1; object silhouette, material layering, and ornament structure from Reference 2.
+- Change: create a new tabletop image with clean studio surface and soft side lighting.
+- Ignore: Reference 1 original subject and scene; Reference 2 camera, background, and lighting; random text, labels, logos, UI, and extra props.
 
-Depict a benevolent Taiwanese folk deity appearing during a quiet blessing moment. The deity should feel sacred, warm, compassionate, and emotionally grounded rather than flashy or aggressive.
+Main subject:
+- a compact brass compass with a translucent blue cover.
 
-Costume direction: clear ceremonial robe silhouette, coherent robe layers, intentional symbolic ornaments, restrained pattern density, readable fabric structure, warm gold and muted temple red accents.
-
-Composition: half-body portrait, slightly low camera angle, calm blessing gesture, centered but not stiff. Background is a soft temple atmosphere with abstract incense glow and warm amber light. Do not include text, logos, UI, captions, watermarks, random symbols, or floating glyphs.
-
-Style: polished 2D illustration for a mobile game card. Clean forms, coherent material rendering, controlled detail density, readable silhouette, smooth gradients, warm gold and pale amber palette, soft divine light, gentle atmosphere.
-
-Prioritize identity consistency, clean silhouette, readable costume hierarchy, natural anatomy, stable hands, coherent lighting, smooth gradients, controlled highlights, and clean background separation.
-
-Keep the rendering clean and stable, with controlled texture detail and smooth material transitions. Avoid render artifacts, high-frequency artifacts, texture fragmentation, fragmented texture, broken texture, scratch-like lines, scraped paint texture, chipped paint effect, peeling texture, grunge scratches, dirty scratches, noisy line artifacts, random thin white lines, chaotic micro-lines, excessive hairline details, over-sharpened details, over-detailed highlights, and specular noise.
-
-Keep the lighting direction consistent and controlled. Use clean controlled highlights, soft sacred glow, coherent shading, and restrained atmospheric particles. Avoid noisy highlights, scattered highlights, broken lighting, inconsistent shading, shading artifacts, harsh edge halos, edge haloing, artificial glow noise, glitter noise, snow noise over the subject, visual clutter, messy translucent overlays, excessive digital glyphs, unreadable floating text, and random code fragments.
-
-Keep the background clean, intentional, and visually coherent. Use smooth gradients, natural material transitions, readable depth, and controlled surface detail. Avoid noisy background symbols, fractured fabric texture, wrinkled plastic texture, dirty glossy surface, muddy white tones, patchy lighting, low-frequency inconsistency, lack of smooth gradients, unnatural material transition, over-constrained details, and over-designed composition.
-
-Design the costume with a clear hierarchy: readable silhouette, coherent layers, intentional ornaments, controlled pattern density, and clean fabric structure. Avoid overly detailed clothing, excessive decoration, fragmented costume, too many accessories, cluttered outfit, complex patterns, messy design, overdesigned clothing, random ornaments, chaotic details, noisy texture, excessive ribbons, and excessive frills.
-
-Use natural anatomy, balanced posture, believable limb placement, readable hands, correct finger count, stable shoulders and wrists, coherent body proportions, and stable perspective. Avoid bad anatomy, deformed body, broken limbs, twisted joints, unnatural pose, impossible pose, dislocated arms, extra arms, extra legs, missing limbs, malformed hands, fused fingers, extra fingers, wrong proportions, distorted torso, bent spine, unnatural balance, floating limbs, broken perspective, and asymmetrical body errors.
-
-Aspect ratio: 2:3.
-Resolution: 1024x1536.
-The final image should be suitable for a mobile game deity card and remain readable at small size.
+Output constraints:
+- single finished square image.
+- no visible text, labels, logo, watermark, UI, or extra objects.

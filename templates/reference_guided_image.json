@@ -1,0 +1,49 @@
+{
+  "asset_name": "reference_guided_image_example",
+  "task_type": "reference_guided_image",
+  "intended_use": "reference-guided high-quality finished image",
+  "image_type": "reference_guided_image",
+  "reference_images": [
+    {
+      "path": "./refs/style.png",
+      "role": "style"
+    },
+    {
+      "path": "./refs/object.png",
+      "role": "costume_object"
+    }
+  ],
+  "preserve": [
+    "declared style language from the style reference",
+    "declared object construction from the object reference"
+  ],
+  "change": [
+    "create a new user-requested subject and scene"
+  ],
+  "ignore": [
+    "reference details outside declared roles",
+    "random text, logos, watermarks, UI, and extra subjects"
+  ],
+  "subject": {
+    "description": "new user-requested subject"
+  },
+  "composition": {
+    "framing": "clear readable framing",
+    "aspect_ratio": "auto"
+  },
+  "scene_direction": {
+    "environment": "user-specified environment"
+  },
+  "style_direction": {
+    "rendering": "follow declared style role only"
+  },
+  "model": {
+    "name": "gpt-image-2",
+    "quality": "high",
+    "size": "1024x1024",
+    "output_format": "png"
+  },
+  "negative_profile": {
+    "mode": "auto"
+  }
+}

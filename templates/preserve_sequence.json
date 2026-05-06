@@ -1,0 +1,39 @@
+{
+  "asset_set_name": "preserve_sequence_example",
+  "task_type": "preserve_sequence",
+  "intended_use": "related Image 2.0 sequence with stable preserve canon",
+  "image_type": "preserve_sequence",
+  "reference_images": [],
+  "preserve_canon": [
+    "stable subject or object traits",
+    "stable visual finish"
+  ],
+  "allowed_variation": [
+    "scene",
+    "lighting",
+    "camera distance"
+  ],
+  "forbidden_variation": [
+    "changing preserve-canon traits",
+    "adding visible text, logos, or UI"
+  ],
+  "images": [
+    {
+      "id": "image_01",
+      "title": "first image",
+      "change": "first requested variation",
+      "scene": "first scene",
+      "composition": "first composition",
+      "lighting": "first lighting"
+    }
+  ],
+  "model": {
+    "name": "gpt-image-2",
+    "quality": "high",
+    "size": "1024x1024",
+    "output_format": "png"
+  },
+  "negative_profile": {
+    "mode": "auto"
+  }
+}

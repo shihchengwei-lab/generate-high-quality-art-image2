@@ -1,20 +1,10 @@
 # Assets
 
-This folder contains sample input specs and prompt examples.
+These files are small v2 contract samples for local validation.
 
-Files:
+- `sample_spec.yaml`: pure text direct spec with no references.
+- `sample_debug_spec.yaml`: reference-guided debug spec with formal roles.
+- `sample_sequence_spec.yaml`: preserve-sequence planning spec.
+- `sample_prompt.txt`: abbreviated assembled prompt example.
 
-- `sample_spec.yaml` - example single-image input configuration
-- `sample_multi_image_spec.yaml` - example multi-image consistency input configuration
-- `sample_prompt.txt` - example final prompt output
-
-Do not store user reference images here by default.
-
-
-For real jobs, use:
-
-```text
-outputs/<asset_name>/<YYYYMMDD-HHMMSS>/
-```
-
-or a temporary `refs/` folder ignored by git.
+Local scripts validate and export debug artifacts only. Normal generation uses Codex built-in `image_gen`.

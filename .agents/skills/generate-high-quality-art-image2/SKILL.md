@@ -1,250 +1,133 @@
 ---
 name: generate-high-quality-art-image2
-description: Generate production-quality single-image game art, deity illustrations, character cards, story illustrations, key visuals, and promotional artwork using Codex built-in Image 2.0 generation, not a repo-local API path. Use for reference-driven direct generation where Image A controls identity, Image B controls pose/composition, and user text controls scene, lighting, atmosphere, time, effects, and story moment. Do not use for sprite sheets, animation frames, tilemaps, transparent-background game assets, UI icon batches, collision data, asset slicing, or game-engine integration.
+description: "Improve first-pass Image 2.0 generation quality with Codex built-in image_gen through a strict v2 contract: explicit task_type, formal reference roles, Preserve / Change / Ignore, quality preflight, and isolated diagnostics. Use for general images, reference-guided images, edit-target images, style transfer, composition transfer, object or material reference use, and preserve-sequence planning. Do not use for sprite sheets, animation frames, tilemaps, transparent-background batches, UI icon batches, game-engine integration, external provider fallback, API batch workflows, or legacy untagged reference specs."
 ---
 
-# Generate High Quality Art with Image 2.0
+# Generate High Quality Images with Image 2.0
 
 ## Purpose
 
-This skill creates high-quality single-image art using Codex's built-in Image 2.0 image generation tool.
+Use this skill to prepare a stronger first Image 2.0 request in a cold-start Codex session.
 
-It supports:
+The skill is general-purpose. It is not a subject catalog, prompt gallery, revision loop, or provider wrapper. The normal generation route is Codex built-in `image_gen`; local scripts validate specs and export optional diagnostics only.
 
-- single-image game art, deity cards, story illustrations, key visuals, and promotional art
-- one or two reference images
-- strict reference role assignment
-- same-character variation prompts where identity is locked and only attire, scene, or pose changes
-- direct generation by default through the built-in `image_gen` tool
-- debug-only prompt export
-- automatic negative prompt module selection
-- rule-based prompt scoring in debug mode
-- root-level structured templates for planning and handoff
+## Default Path
 
-This skill is not for sprite sheets, animation frame sheets, tilemaps, transparent-background assets, UI icons, asset slicing, collision data, or game-engine integration.
-It also does not include UI, infographic, commercial poster, brand identity, logo, or product advertising templates.
+- Use host-native `image_gen` for generation.
+- Do not call a repo-local image API helper.
+- Do not ask for `OPENAI_API_KEY`.
+- Do not switch to CLI, ComfyUI, LoRA, batch API, or another provider unless the user explicitly changes scope.
+- For unrelated final images, make separate host-native generation calls.
+- Treat supplied images as limited references unless the user explicitly asks to edit an existing image.
 
-## Structured planning assets
+## v2 Direct Contract
 
-The repository root contains planning templates in `docs/`, `templates/`, `schemas/`, `quality_checks/`, and `examples/`.
+Before prompt assembly, define:
 
-Use those files when the user asks for a structured prompt plan, a character sheet brief, a locked-character variation brief, or a narrative scene brief.
+- `task_type`: `general_image`, `reference_guided_image`, or `edit_target_image`
+- `intended_use`
+- `image_type`
+- `reference_images`: zero to five references
+- `preserve`
+- `change`
+- `ignore`
 
-Normal image generation still follows the direct reference workflow in this skill. The root templates are handoff and debug assets; they are not required for ordinary one-off generation.
+Every reference image must declare exactly one formal role:
 
-For structured planning, start with:
+| Role | Allowed Authority |
+|---|---|
+| `identity` | recognizable identity traits, stable subject features, age impression, body proportion when visible, hair or signature traits |
+| `style` | line language, color handling, shading approach, material treatment, render density |
+| `composition_pose` | framing, camera, crop, pose, spatial arrangement, placement, image rhythm |
+| `costume_object` | named clothing, accessories, props, object silhouette, material structure, ornament construction |
+| `edit_target` | target image to modify, unchanged regions, existing placement, requested local or global edit scope |
 
-- `docs/skill-architecture.md` for the repo and workflow shape
-- `docs/skill-modes.md` for `prompt_only`, `advisor`, and `host_native`
-- `docs/prompt-assembly.md` for fixed prompt order
-- `docs/vocabulary.md` for minimal camera, lighting, composition, mood, action, and look terms
-- `docs/external-repo-evaluation.md` for public method sources and adoption boundaries
+Reject untagged references and unsupported roles. Do not infer roles from reference order.
 
-Root template `mode` is a planning concept. It does not replace runtime `execution_mode: direct` or `execution_mode: debug`.
+## Preserve / Change / Ignore
 
-## Default behavior
+Write this contract before the visual description:
 
-Default mode is direct generation through Codex built-in Image 2.0.
+```text
+Preserve:
+- fixed traits, regions, style language, object details, or sequence canon
 
-```yaml
-execution_mode: "direct"
-debug_export_prompt: false
+Change:
+- only the visual dimensions the user asked or allowed to change
+
+Ignore:
+- reference details outside declared roles, unrequested additions, and conflict sources
 ```
 
-For normal user work:
+User text has highest authority for requested subject, output form, scene, lighting, and change scope. A reference controls only its declared role.
 
-- Do call the built-in `image_gen` tool directly.
-- Do not add or call a repo-local OpenAI Images API wrapper for ordinary generation.
-- Do not require or ask for `OPENAI_API_KEY`.
-- Do not ask the user to manually transfer `final_prompt.txt` unless they explicitly request debug output.
-- If reference images are local files and not already attached in the thread, inspect/open them first so the built-in generator has the visual context, then refer to them as Image A and Image B in the `image_gen` prompt.
-- Treat input images as references unless the user explicitly asks to edit an existing image.
-- If the user asks to modify an existing image, make sure that image is visible in the conversation context before treating it as an edit target.
-- Do not silently switch from the built-in path to local API, CLI, ComfyUI, LoRA, or other provider workflows.
-- If the user asks for multiple distinct assets or variants, make one generation call per distinct final image instead of merging unrelated deliverables into one prompt.
-- Do not use `OPENAI_API_KEY` or a repo-local API helper as a batch escape hatch. If a request is too large for practical host-native generation, pause and ask whether the user wants to change scope or authorize a different workflow.
+## Quality Preflight
 
-## Output handling
+Before calling `image_gen`, check:
 
-The built-in generator may save images outside this repository by default.
+- task type and requested output form are clear
+- each reference has one formal role, or there are no references
+- Preserve / Change / Ignore is explicit before scene details
+- conflicts are resolved by user text first, then declared reference role
+- unassigned reference background, lighting, text, objects, subject, or style cannot leak into the prompt
+- output count, aspect ratio, visible-text policy, and destination needs are clear
 
-Use this priority:
+## Prompt Assembly Order
 
-1. If the image is only for preview or brainstorming, inline preview is enough.
-2. If the user names a destination, move or copy the selected final image there after generation.
-3. If the image is meant to be used by this project, move or copy the selected final image into the workspace before finishing.
+Use this order:
 
-Never leave a project-referenced asset only in Codex's default generated-image location.
+1. Image goal, task type, image type, and intended use.
+2. Reference authority and role assignments.
+3. Preserve / Change / Ignore.
+4. Reference contamination guards.
+5. Main subject.
+6. Composition, camera, and spatial arrangement.
+7. Scene, lighting, and atmosphere from user text.
+8. Rendering style.
+9. Visual accuracy and clean-render contract.
+10. Output constraints.
+11. Post-generation quality checks.
+12. Custom avoid list or selected avoid modules.
 
-## Iteration discipline
+Do not hide preserve rules only in negative prompts. State important constraints positively near the front.
 
-When revising a generated result:
+## Preserve Sequences
 
-- Identify the visible failure category first.
-- Keep the same Image A / Image B / user-text authority rules in every follow-up.
-- Change one targeted thing per revision when possible.
-- Preserve immutable identity before adjusting pose, attire, scene, lighting, or effects.
-- Do not add new style systems, providers, or pipeline steps just because one output failed.
-- When the generated image is visible to the agent and follow-up inspection is available, compare it against the quality checklist before deciding that a revision is done.
-- For inaccurate or noisy outputs, repair the concrete failure instead of adding generic quality words: use `visual_accuracy` for wrong subject/action/scene/props and `noise_artifacts` for speckle, muddy haze, dirty texture, edge halos, scratch-like lines, or chaotic micro-detail.
+For multi-output planning, use `task_type: preserve_sequence` with:
 
-When adding or revising constraints, keep only rules that preserve identity/source authority, capture the requested change, prevent a known failure, or create a reviewable output check. Delete or merge decorative and redundant instructions.
+- `preserve_canon`
+- `allowed_variation`
+- `forbidden_variation`
+- `images`
+- `reference_images`, empty or formal-role references
 
-The final prompt sent to `image_gen` must include:
+Each image may vary only dimensions listed in `allowed_variation`. The preserve canon wins over per-image scene, lighting, camera, or local edits.
 
-- the reference authority block
-- the character consistency lock block
-- immutable identity and allowed-change rules before pose, attire, scene, and lighting
-- the user's scene, lighting, atmosphere, time, effects, and story moment
-- anti-sheet constraints
-- anti-Image-B-background-takeover constraints
-- selected negative constraints when relevant
+## Optional Diagnostics
 
-Use helper scripts only for validation or debug prompt packages:
+Use diagnostics only to inspect a contract or a generated result. They are not the generation path.
 
 ```bash
 python .agents/skills/generate-high-quality-art-image2/scripts/generate_direct.py --spec <spec.yaml> --dry-run
-python .agents/skills/generate-high-quality-art-image2/scripts/build_prompt.py --spec <spec.yaml>
+python .agents/skills/generate-high-quality-art-image2/scripts/build_sequence_prompts.py --spec <spec.yaml>
+python .agents/skills/generate-high-quality-art-image2/scripts/inspect_output.py --job-dir <job-dir>
 ```
 
-Do not introduce a repo-local OpenAI Images API path for normal generation. Do not run helper scripts as a substitute for `image_gen`; they exist only to validate specs or export debug prompt packages.
+Debug mode may export `final_prompt.txt`, `reference_interpretation.md`, `quality_preflight.md`, `quality_checklist.md`, `negative_prompt_used.md`, `negative_module_selection.md`, `prompt_score.json`, and `prompt_score.md`.
 
-For targeted post-generation repair prompts:
+## Output Handling
 
-```bash
-python .agents/skills/generate-high-quality-art-image2/scripts/inspect_output.py --job-dir <job-dir> --issue visual_accuracy
-python .agents/skills/generate-high-quality-art-image2/scripts/inspect_output.py --job-dir <job-dir> --issue noise_artifacts
-```
+The built-in generator may save images outside this repository by default.
 
-## Reference image rules
+1. If the image is only for preview, inline preview is enough.
+2. If the user names a destination, move or copy the selected final image there after generation.
+3. If the image is project material, move or copy the selected final image into the workspace before finishing.
 
-If one reference image is provided, treat it as Image A: identity sheet source.
+Never leave a project-referenced asset only in Codex's default generated-image location.
 
-If two reference images are provided:
+## Non-Goals
 
-- Image A controls identity only.
-- Image B controls pose / composition only.
-- User text controls scene, lighting, time, atmosphere, effects, and story moment.
-
-### Image A = identity sheet
-
-Use only:
-
-- face identity
-- facial feature proportions
-- hairstyle and hair color
-- body proportion
-- age impression
-- base costume design
-- character temperament
-
-Never copy:
-
-- model sheet layout
-- turnaround sheet layout
-- front / side / back presentation
-- labels
-- text
-- panel layout
-- sheet formatting
-
-### Image B = pose / composition
-
-Use only:
-
-- pose
-- camera angle
-- framing
-- body gesture
-- composition rhythm
-
-Never copy:
-
-- background
-- scene
-- lighting
-- color palette
-- effects
-- props
-- costume details
-- alternate identity
-
-## Scene authority
-
-The user's written scene description overrides reference-image environments.
-
-For scene, lighting, atmosphere, time, effects, and story moment, always prefer:
-
-```text
-User text > Image B
-```
-
-Image B's environment must not take over the final image.
-
-## Character prompt templates
-
-Supported template families:
-
-- `character_illustration`
-- `character_setting_art`
-- `narrative_scene`
-- `same_character_variation`
-
-Use `same_character_variation` when the user wants the same person locked while changing only clothes, scene, or pose.
-
-```yaml
-prompt_template: "same_character_variation"
-immutable_identity:
-  - "same face identity"
-  - "same age impression"
-  - "same body proportion"
-allowed_changes:
-  - "attire"
-  - "scene"
-  - "pose"
-attire:
-  footwear: "follow the user's shoe or barefoot instruction exactly"
-negative_prompt:
-  - "do not change face identity"
-  - "do not switch barefoot/shoe state unless requested"
-```
-
-For this template, put the character consistency lock near the front of the prompt before attire, composition, scene, lighting, and negative prompt sections.
-
-## Anti-sheet and anti-takeover constraints
-
-Always include the following internal constraints:
-
-- Do not generate a model sheet, turnaround sheet, design sheet, or multi-panel layout.
-- Do not reproduce front / side / back views.
-- Generate one finished illustration only.
-- Use Image B only for pose, framing, body gesture, composition rhythm, and camera angle.
-- Ignore Image B background, scene, lighting, color palette, props, and effects.
-
-## Output files
-
-Helper dry-run writes:
-
-- `generation_settings.json`
-- `direct_generation_summary.md`
-
-Debug mode additionally writes:
-
-- `final_prompt.txt`
-- `negative_prompt_used.md`
-- `negative_module_selection.md`
-- `reference_interpretation.md`
-- `quality_checklist.md`
-- `prompt_score.json`
-- `prompt_score.md`
-
-## Quality workflow
-
-Use built-in direct generation for normal user work. Use debug mode only when diagnosing reference-role drift, sheet-layout takeover, or Image B background takeover.
-
-Quality checks must cover:
-
-- hands and finger count
-- barefoot / footwear state
-- lighting-source conflict
-- scene-source conflict
+- No sprite sheets, animation frame sheets, tilemaps, transparent-background batches, UI icon batches, asset slicing, collision data, or game-engine integration.
+- No repo-local image API path for normal generation.
+- No external provider or API fallback without explicit user authorization.
+- No legacy untagged-reference contract.

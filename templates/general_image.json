@@ -1,0 +1,39 @@
+{
+  "asset_name": "general_image_example",
+  "task_type": "general_image",
+  "intended_use": "general high-quality finished image",
+  "image_type": "pure_text_image",
+  "reference_images": [],
+  "preserve": [
+    "requested subject and output intent",
+    "clean visual hierarchy"
+  ],
+  "change": [
+    "create the requested image from user text"
+  ],
+  "ignore": [
+    "unrequested text, logos, watermarks, UI, and extra subjects"
+  ],
+  "subject": {
+    "description": "user-specified subject"
+  },
+  "composition": {
+    "framing": "clear readable framing",
+    "aspect_ratio": "auto"
+  },
+  "scene_direction": {
+    "environment": "user-specified or task-appropriate environment"
+  },
+  "style_direction": {
+    "rendering": "polished clean finish"
+  },
+  "model": {
+    "name": "gpt-image-2",
+    "quality": "high",
+    "size": "1024x1024",
+    "output_format": "png"
+  },
+  "negative_profile": {
+    "mode": "auto"
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "asset_name": "edit_target_image_example",
+  "task_type": "edit_target_image",
+  "intended_use": "Image 2.0 edit-target modification",
+  "image_type": "edit_target_image",
+  "reference_images": [
+    {
+      "path": "./refs/edit-target.png",
+      "role": "edit_target"
+    }
+  ],
+  "preserve": [
+    "all unchanged regions of the edit target",
+    "existing placement and spatial context"
+  ],
+  "change": [
+    "only the requested local or global edit"
+  ],
+  "ignore": [
+    "unrequested redesign",
+    "new unrelated objects",
+    "random text, logos, watermarks, and UI"
+  ],
+  "subject": {
+    "description": "edit the supplied target image as requested"
+  },
+  "composition": {
+    "framing": "preserve existing placement unless the user asks otherwise",
+    "aspect_ratio": "preserve source unless specified"
+  },
+  "scene_direction": {
+    "environment": "preserve unchanged environment unless specified"
+  },
+  "style_direction": {
+    "rendering": "preserve existing visual finish unless specified"
+  },
+  "model": {
+    "name": "gpt-image-2",
+    "quality": "high",
+    "size": "1024x1024",
+    "output_format": "png"
+  },
+  "negative_profile": {
+    "mode": "auto"
+  }
+}

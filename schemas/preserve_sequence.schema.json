@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Preserve Sequence v2 Spec",
+  "type": "object",
+  "required": ["asset_set_name", "task_type", "intended_use", "image_type", "reference_images", "preserve_canon", "allowed_variation", "forbidden_variation", "images"],
+  "properties": {
+    "asset_set_name": {"type": "string"},
+    "task_type": {"const": "preserve_sequence"},
+    "intended_use": {"type": "string"},
+    "image_type": {"type": "string"},
+    "reference_images": {
+      "type": "array",
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "required": ["path", "role"],
+        "properties": {
+          "path": {"type": "string"},
+          "role": {"enum": ["identity", "style", "composition_pose", "costume_object", "edit_target"]}
+        }
+      }
+    },
+    "preserve_canon": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "allowed_variation": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "forbidden_variation": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "images": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id"],
+        "properties": {
+          "id": {"type": "string"},
+          "title": {"type": "string"},
+          "change": {"type": "string"},
+          "scene": {"type": "string"},
+          "composition": {"type": "string"},
+          "lighting": {"type": "string"}
+        }
+      }
+    },
+    "model": {"type": "object"},
+    "negative_profile": {"type": "object"}
+  }
+}

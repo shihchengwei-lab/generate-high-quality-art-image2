@@ -1,0 +1,40 @@
+asset_set_name: example_preserve_sequence
+task_type: preserve_sequence
+run_generation: false
+intended_use: related image sequence with stable object canon
+image_type: preserve_sequence
+reference_images:
+  - path: ./refs/material-style.png
+    role: style
+preserve_canon:
+  - same small ceramic lantern form
+  - same blue-white glaze material
+  - same clean illustrative finish
+allowed_variation:
+  - environment
+  - time of day
+  - camera distance
+forbidden_variation:
+  - changing the lantern silhouette
+  - adding visible text or logos
+  - replacing the glaze material
+images:
+  - id: image_01
+    title: morning window
+    change: place the lantern near a bright window
+    scene: quiet interior windowsill
+    composition: medium close-up
+    lighting: soft morning daylight
+  - id: image_02
+    title: evening table
+    change: place the lantern on a dark wooden table
+    scene: minimal evening room
+    composition: wider view with more negative space
+    lighting: warm low side light
+model:
+  name: gpt-image-2
+  quality: high
+  size: 1024x1024
+  output_format: png
+negative_profile:
+  mode: auto

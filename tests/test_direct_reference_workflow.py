@@ -9,207 +9,197 @@ from pathlib import Path
 
 import yaml
 
+
 ROOT = Path(__file__).resolve().parents[1]
 SKILL = ROOT / ".agents/skills/generate-high-quality-art-image2"
-SCRIPT = SKILL / "scripts/generate_direct.py"
+DIRECT_SCRIPT = SKILL / "scripts/generate_direct.py"
+SEQUENCE_SCRIPT = SKILL / "scripts/build_sequence_prompts.py"
 
 
-def run_direct(spec: dict, *, dry_run: bool = True) -> Path:
+def run_script(args: list[str]) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(args, cwd=ROOT, text=True, capture_output=True)
+
+
+def write_spec(spec: dict) -> Path:
     tmp = Path(tempfile.mkdtemp())
     spec_path = tmp / "spec.yaml"
     spec_path.write_text(yaml.safe_dump(spec, sort_keys=False), encoding="utf-8")
-    out_dir = tmp / "outputs"
-    cmd = [sys.executable, str(SCRIPT), "--spec", str(spec_path), "--out", str(out_dir)]
+    return spec_path
+
+
+def run_direct(spec: dict, *, dry_run: bool = True) -> Path:
+    spec_path = write_spec(spec)
+    out_dir = spec_path.parent / "outputs"
+    cmd = [sys.executable, str(DIRECT_SCRIPT), "--spec", str(spec_path), "--out", str(out_dir)]
     if dry_run:
         cmd.append("--dry-run")
-    result = subprocess.run(cmd, cwd=ROOT, text=True, capture_output=True)
+    result = run_script(cmd)
     if result.returncode != 0:
         raise AssertionError(f"command failed\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}")
-    asset_dir = out_dir / spec["asset_name"]
-    job_dirs = sorted(asset_dir.iterdir())
-    if not job_dirs:
-        raise AssertionError("no job dir created")
+    job_dirs = sorted((out_dir / spec["asset_name"]).iterdir())
     return job_dirs[-1]
 
 
-def base_spec() -> dict:
+def general_spec() -> dict:
     return {
-        "asset_name": "test_direct_reference",
-        "workflow_type": "direct_reference_generation",
+        "asset_name": "test_general",
+        "task_type": "general_image",
         "execution_mode": "direct",
         "debug_export_prompt": False,
-        "intended_use": "mobile game deity card illustration",
-        "image_type": "deity_card",
         "run_generation": True,
-        "model": {"name": "gpt-image-2", "quality": "high", "size": "1024x1536"},
-        "reference_images": [
-            {"path": "./refs/three_view_identity.png", "role": "primary_identity_costume"},
-            {"path": "./refs/bright_city_pose.png", "role": "secondary_pose_lighting_composition"},
-        ],
-        "subject": {"description": "same character as image 1"},
-        "composition": {
-            "framing": "full-body",
-            "camera": "three-quarter front",
-            "pose": "use image 2 pose only",
-            "layout": "single centered illustration",
-            "aspect_ratio": "2:3",
-        },
-        "scene_direction": {
-            "description": "moonlit Lushan summit at night",
-            "lighting": "cool moonlight and soft sacred silver glow",
-            "environment": "quiet mountain shrine summit",
-            "atmosphere": "solemn and protective",
-            "effects": "subtle silver motes",
-        },
-        "constraints": {
-            "single_finished_illustration_only": True,
-            "forbid_character_sheet_output": True,
-            "forbid_multi_panel_layout": True,
-            "forbid_reference_background_takeover": True,
-        },
+        "intended_use": "general high-quality finished image",
+        "image_type": "pure_text_image",
+        "reference_images": [],
+        "preserve": ["requested subject", "clean hierarchy"],
+        "change": ["create the requested image from user text"],
+        "ignore": ["random text", "logos", "hidden reference assumptions"],
+        "subject": {"description": "a glass teapot on a rainy windowsill"},
+        "composition": {"framing": "medium close-up", "aspect_ratio": "4:3"},
+        "scene_direction": {"environment": "quiet kitchen window", "lighting": "soft daylight"},
+        "style_direction": {"rendering": "polished naturalistic illustration"},
+        "model": {"name": "gpt-image-2", "quality": "high", "size": "1536x1024"},
         "negative_profile": {"mode": "auto"},
     }
 
 
-class DirectReferenceWorkflowTests(unittest.TestCase):
-    def test_a_three_view_pose_ref_custom_scene_prompt_controls(self) -> None:
-        spec = base_spec()
-        spec["execution_mode"] = "debug"
-        spec["debug_export_prompt"] = True
-        job_dir = run_direct(spec)
-        prompt = (job_dir / "final_prompt.txt").read_text(encoding="utf-8").lower()
-        interpretation = (job_dir / "reference_interpretation.md").read_text(encoding="utf-8").lower()
+def reference_spec() -> dict:
+    spec = general_spec()
+    spec.update(
+        {
+            "asset_name": "test_reference",
+            "task_type": "reference_guided_image",
+            "execution_mode": "debug",
+            "debug_export_prompt": True,
+            "image_type": "reference_guided_image",
+            "reference_images": [
+                {"path": "./refs/style.png", "role": "style"},
+                {"path": "./refs/object.png", "role": "costume_object"},
+            ],
+            "preserve": ["style language from Reference 1", "object structure from Reference 2"],
+            "change": ["new subject and scene from user text"],
+            "ignore": ["source details outside declared roles", "random text", "logos"],
+        }
+    )
+    return spec
 
-        self.assertIn("image a = identity sheet source only", prompt)
-        self.assertIn("image b = pose / composition source only", prompt)
-        self.assertIn("user text = highest authority for scene", prompt)
-        self.assertIn("do not generate a model sheet", prompt)
-        self.assertIn("do not reproduce front/side/back views", prompt)
-        self.assertIn("ignore image b background", prompt)
-        self.assertIn("moonlit lushan summit", prompt)
-        self.assertIn("visual accuracy and clean render contract", prompt)
-        self.assertIn("prioritize literal accuracy over decorative complexity", prompt)
-        self.assertIn("clean controlled rendering", prompt)
-        self.assertIn("role: identity_sheet", interpretation)
-        self.assertIn("role: pose_composition", interpretation)
 
-    def test_b_direct_mode_does_not_export_prompt(self) -> None:
-        spec = base_spec()
-        spec["execution_mode"] = "direct"
-        spec["debug_export_prompt"] = False
-        job_dir = run_direct(spec)
-        self.assertTrue((job_dir / "generation_settings.json").exists())
-        self.assertTrue((job_dir / "direct_generation_summary.md").exists())
+class DirectV2ContractTests(unittest.TestCase):
+    def test_pure_text_spec_with_no_references_passes(self) -> None:
+        job_dir = run_direct(general_spec())
+        settings = json.loads((job_dir / "generation_settings.json").read_text(encoding="utf-8"))
+        self.assertEqual(settings["reference_images"], [])
         self.assertFalse((job_dir / "final_prompt.txt").exists())
-        self.assertFalse((job_dir / "codex_imagegen_notice.md").exists())
+        self.assertTrue((job_dir / "direct_generation_summary.md").exists())
 
-    def test_c_debug_mode_exports_prompt_artifacts(self) -> None:
-        spec = base_spec()
-        spec["asset_name"] = "test_debug_reference"
-        spec["execution_mode"] = "debug"
-        spec["debug_export_prompt"] = True
-        job_dir = run_direct(spec)
+    def test_debug_mode_exports_diagnostics(self) -> None:
+        job_dir = run_direct(reference_spec())
         for name in [
             "final_prompt.txt",
             "reference_interpretation.md",
+            "quality_preflight.md",
+            "quality_checklist.md",
             "negative_prompt_used.md",
             "negative_module_selection.md",
-            "quality_checklist.md",
             "prompt_score.json",
             "prompt_score.md",
         ]:
             self.assertTrue((job_dir / name).exists(), name)
 
-    def test_d_strong_image_b_background_is_ignored(self) -> None:
-        spec = base_spec()
-        spec["asset_name"] = "test_pose_background_takeover"
-        spec["execution_mode"] = "debug"
-        spec["debug_export_prompt"] = True
-        spec["reference_images"][1]["path"] = "./refs/neon_city_pose_with_strong_background.png"
-        spec["scene_direction"]["environment"] = "ancient forest altar under rain at midnight"
-        spec["scene_direction"]["lighting"] = "cold moonlight through rain mist"
-        job_dir = run_direct(spec)
+    def test_reference_without_role_fails(self) -> None:
+        spec = reference_spec()
+        del spec["reference_images"][0]["role"]
+        result = run_script([sys.executable, str(DIRECT_SCRIPT), "--spec", str(write_spec(spec)), "--dry-run"])
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("reference role is required", result.stderr)
+        self.assertIn("identity, style, composition_pose, costume_object, edit_target", result.stderr)
+
+    def test_unsupported_role_alias_fails(self) -> None:
+        spec = reference_spec()
+        spec["reference_images"][0]["role"] = "identity" + "_sheet"
+        result = run_script([sys.executable, str(DIRECT_SCRIPT), "--spec", str(write_spec(spec)), "--dry-run"])
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("unsupported reference role", result.stderr)
+        self.assertIn("identity, style, composition_pose, costume_object, edit_target", result.stderr)
+
+    def test_two_untagged_references_do_not_get_positional_defaults(self) -> None:
+        spec = reference_spec()
+        spec["reference_images"] = [{"path": "./refs/one.png"}, {"path": "./refs/two.png"}]
+        result = run_script([sys.executable, str(DIRECT_SCRIPT), "--spec", str(write_spec(spec)), "--dry-run"])
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("reference role is required", result.stderr)
+
+    def test_missing_pci_field_fails(self) -> None:
+        for key in ["preserve", "change", "ignore"]:
+            with self.subTest(key=key):
+                spec = general_spec()
+                spec.pop(key)
+                result = run_script([sys.executable, str(DIRECT_SCRIPT), "--spec", str(write_spec(spec)), "--dry-run"])
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(f"{key} is required", result.stderr)
+
+    def test_preflight_and_prompt_front_load_contract(self) -> None:
+        job_dir = run_direct(reference_spec())
+        preflight = (job_dir / "quality_preflight.md").read_text(encoding="utf-8").lower()
         prompt = (job_dir / "final_prompt.txt").read_text(encoding="utf-8").lower()
-        self.assertIn("ancient forest altar", prompt)
-        self.assertIn("ignore image b background", prompt)
-        self.assertIn("the user's written scene description overrides image b environment completely", prompt)
-        self.assertIn("image b ignore", prompt)
+        self.assertLess(preflight.index("## task type"), preflight.index("## reference roles"))
+        self.assertLess(preflight.index("## reference roles"), preflight.index("## preserve / change / ignore"))
+        self.assertLess(prompt.index("preserve / change / ignore before prompt assembly"), prompt.index("main subject"))
+        self.assertLess(prompt.index("main subject"), prompt.index("scene / lighting / atmosphere from user text"))
 
-    def test_e_same_character_variation_schema_is_front_loaded(self) -> None:
-        spec = base_spec()
-        spec["asset_name"] = "test_same_character_variation"
-        spec["execution_mode"] = "debug"
-        spec["debug_export_prompt"] = True
-        spec["prompt_template"] = "same_character_variation"
-        spec["reference_lock"] = {
-            "identity": "Image A",
-            "pose": "Image B",
-            "scene_lighting": "user text",
-        }
-        spec["immutable_identity"] = [
-            "same face identity",
-            "same age impression",
-            "same body proportion",
-            "same hairstyle",
-        ]
-        spec["allowed_changes"] = ["attire", "scene", "pose"]
-        spec["attire"] = {
-            "change_request": "replace ceremonial robe with travel cloak",
-            "footwear": "soft black boots, not barefoot",
-            "materials": "matte fabric, simple leather strap",
-        }
-        spec["negative_prompt"] = ["do not change face identity", "do not switch boots to bare feet"]
-        job_dir = run_direct(spec)
-        prompt = (job_dir / "final_prompt.txt").read_text(encoding="utf-8").lower()
-        checklist = (job_dir / "quality_checklist.md").read_text(encoding="utf-8").lower()
-
-        lock_index = prompt.index("character consistency lock")
-        attire_index = prompt.index("attire / outfit")
-        scene_index = prompt.index("scene authority from user text")
-        self.assertLess(lock_index, attire_index)
-        self.assertLess(lock_index, scene_index)
-        self.assertIn("reference_lock", prompt)
-        self.assertIn("immutable_identity", prompt)
-        self.assertIn("allowed_changes", prompt)
-        self.assertIn("same_character_variation rule", prompt)
-        self.assertIn("soft black boots, not barefoot", prompt)
-        self.assertIn("negative prompt / custom avoid list", prompt)
-        self.assertIn("hands and fingers", checklist)
-        self.assertIn("visual accuracy", checklist)
-        self.assertIn("render cleanliness", checklist)
-        self.assertIn("bare feet / footwear", checklist)
-        self.assertIn("lighting conflict", checklist)
-        self.assertIn("scene conflict", checklist)
-        self.assertIn("variant scope", checklist)
-        self.assertIn("revision scope", checklist)
-
-    def test_f_prompt_score_accepts_normalized_reference_roles(self) -> None:
-        spec = base_spec()
-        spec["asset_name"] = "test_prompt_score_reference_roles"
-        spec["execution_mode"] = "debug"
-        spec["debug_export_prompt"] = True
-        job_dir = run_direct(spec)
-        score = json.loads((job_dir / "prompt_score.json").read_text(encoding="utf-8"))
-
-        self.assertNotIn(
-            "missing reference role assignment when references exist",
-            score["critical_issues"],
-        )
-        self.assertEqual(score["dimensions"]["reference_role_clarity"]["score"], 5)
-
-    def test_g_local_helper_refuses_non_dry_run_generation(self) -> None:
-        spec = base_spec()
-        tmp = Path(tempfile.mkdtemp())
-        spec_path = tmp / "spec.yaml"
-        spec_path.write_text(yaml.safe_dump(spec, sort_keys=False), encoding="utf-8")
-        result = subprocess.run(
-            [sys.executable, str(SCRIPT), "--spec", str(spec_path), "--out", str(tmp / "outputs")],
-            cwd=ROOT,
-            text=True,
-            capture_output=True,
-        )
+    def test_local_helper_refuses_non_dry_run_generation(self) -> None:
+        spec_path = write_spec(general_spec())
+        result = run_script([sys.executable, str(DIRECT_SCRIPT), "--spec", str(spec_path)])
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("does not call image_gen", result.stderr)
+
+
+class SequenceV2ContractTests(unittest.TestCase):
+    def sequence_spec(self) -> dict:
+        return {
+            "asset_set_name": "test_sequence",
+            "task_type": "preserve_sequence",
+            "run_generation": False,
+            "intended_use": "related image sequence",
+            "image_type": "preserve_sequence",
+            "reference_images": [{"path": "./refs/style.png", "role": "style"}],
+            "preserve_canon": ["same ceramic lantern form", "same blue-white glaze"],
+            "allowed_variation": ["environment", "camera distance"],
+            "forbidden_variation": ["changing lantern silhouette", "visible text"],
+            "images": [
+                {
+                    "id": "image_01",
+                    "title": "window",
+                    "change": "place the object near a window",
+                    "scene": "quiet interior",
+                    "composition": "medium close-up",
+                    "lighting": "soft daylight",
+                }
+            ],
+            "negative_profile": {"mode": "auto"},
+        }
+
+    def test_sequence_uses_preserve_canon_contract(self) -> None:
+        spec = self.sequence_spec()
+        spec_path = write_spec(spec)
+        out_dir = spec_path.parent / "outputs"
+        result = run_script([sys.executable, str(SEQUENCE_SCRIPT), "--spec", str(spec_path), "--out", str(out_dir)])
+        self.assertEqual(result.returncode, 0, result.stderr)
+        job_dir = next((out_dir / spec["asset_set_name"]).iterdir())
+        guide = (job_dir / "sequence_guide.md").read_text(encoding="utf-8").lower()
+        prompt = (job_dir / "image_01_prompt.txt").read_text(encoding="utf-8").lower()
+        self.assertIn("preserve canon", guide)
+        self.assertIn("allowed variation", guide)
+        self.assertIn("forbidden variation", guide)
+        self.assertIn("preserve canon wins", guide)
+        self.assertIn("preserve / change / ignore", prompt)
+        self.assertFalse((job_dir / "consistency_guide.md").exists())
+
+    def test_sequence_rejects_legacy_field(self) -> None:
+        spec = self.sequence_spec()
+        spec["shared" + "_" + "identity"] = {"subject": "old"}
+        result = run_script([sys.executable, str(SEQUENCE_SCRIPT), "--spec", str(write_spec(spec))])
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Unsupported legacy fields", result.stderr)
 
 
 if __name__ == "__main__":

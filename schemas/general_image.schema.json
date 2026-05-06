@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "General Image v2 Spec",
+  "type": "object",
+  "required": ["asset_name", "task_type", "intended_use", "image_type", "reference_images", "preserve", "change", "ignore"],
+  "properties": {
+    "asset_name": {"type": "string"},
+    "task_type": {"const": "general_image"},
+    "intended_use": {"type": "string"},
+    "image_type": {"type": "string"},
+    "reference_images": {"type": "array", "maxItems": 0},
+    "preserve": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "change": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "ignore": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "subject": {"type": "object"},
+    "composition": {"type": "object"},
+    "scene_direction": {"type": "object"},
+    "style_direction": {"type": "object"},
+    "model": {"type": "object"},
+    "negative_profile": {"type": "object"}
+  }
+}

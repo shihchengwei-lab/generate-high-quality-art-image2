@@ -35,10 +35,13 @@ def write_prompt_package(
     reference_interpretation: str,
     generation_settings: dict[str, Any],
     quality_checklist: str,
+    quality_preflight: str | None = None,
 ) -> None:
     write_text(out_dir / "final_prompt.txt", final_prompt)
     write_text(out_dir / "negative_prompt_used.md", negative_prompt)
     write_text(out_dir / "negative_module_selection.md", negative_selection)
     write_text(out_dir / "reference_interpretation.md", reference_interpretation)
     write_json(out_dir / "generation_settings.json", generation_settings)
+    if quality_preflight is not None:
+        write_text(out_dir / "quality_preflight.md", quality_preflight)
     write_text(out_dir / "quality_checklist.md", quality_checklist)

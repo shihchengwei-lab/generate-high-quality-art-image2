@@ -4,23 +4,22 @@ from typing import Any
 
 
 DIMENSIONS = [
-    "objective_clarity",
-    "reference_role_clarity",
-    "identity_preservation",
-    "composition_specificity",
-    "costume_and_prop_hierarchy",
-    "lighting_and_mood_control",
-    "background_control",
-    "negative_control_coverage",
-    "mobile_readability",
-    "ambiguity_risk",
-    "prompt_clutter_risk",
-    "intended_use_fit",
+    "task_contract",
+    "reference_role_contract",
+    "preserve_change_ignore",
+    "preflight_visibility",
+    "output_constraints",
+    "negative_controls",
+    "contradiction_risk",
 ]
 
 
 def _has(text: str, terms: list[str]) -> bool:
     return any(term and term in text for term in terms)
+
+
+def _count_hits(text: str, terms: list[str]) -> int:
+    return sum(1 for term in terms if term and term in text)
 
 
 def _dimension(score: int, reason: str, risk: str, improvement: str) -> dict[str, Any]:
@@ -32,19 +31,16 @@ def _dimension(score: int, reason: str, risk: str, improvement: str) -> dict[str
     }
 
 
-def _count_hits(text: str, terms: list[str]) -> int:
-    return sum(1 for term in terms if term and term in text)
-
-
-def _reference_roles_are_clear(reference_interpretation: str, ref_count: int) -> bool:
-    if ref_count == 0:
+def _reference_roles_are_clear(reference_interpretation: str, refs: Any) -> bool:
+    if not isinstance(refs, list) or not refs:
         return True
     interpretation = reference_interpretation.lower()
-    if "role: identity_sheet" not in interpretation:
-        return False
-    if ref_count == 1:
-        return True
-    return "role: pose_composition" in interpretation
+    for ref in refs:
+        if not isinstance(ref, dict) or not ref.get("role"):
+            return False
+        if f"role: {str(ref['role']).lower()}" not in interpretation:
+            return False
+    return True
 
 
 def score_prompt_package(
@@ -53,169 +49,73 @@ def score_prompt_package(
     negative_prompt: str,
     reference_interpretation: str,
 ) -> dict[str, Any]:
-    combined = " ".join([final_prompt, negative_prompt, reference_interpretation]).lower()
     prompt_lower = final_prompt.lower()
-    settings_text = " ".join(str(v) for v in generation_settings.values()).lower()
-    image_type = str(generation_settings.get("image_type", "")).lower()
-    intended_use = str(generation_settings.get("intended_use", "")).lower()
+    reference_lower = reference_interpretation.lower()
+    negative_lower = negative_prompt.lower()
     refs = generation_settings.get("reference_images", [])
-    ref_count = len(refs) if isinstance(refs, list) else 0
 
     dimensions: dict[str, dict[str, Any]] = {}
 
-    objective_hits = _count_hits(prompt_lower, ["create", "illustration", "depict", intended_use])
-    dimensions["objective_clarity"] = _dimension(
-        5 if objective_hits >= 3 else 3 if objective_hits >= 2 else 2,
-        "The prompt states the image objective, subject, and intended use."
-        if objective_hits >= 3
-        else "The objective is present but could be more explicit.",
-        "Weak objectives can produce generic or misdirected output.",
-        "State the target asset, subject, and intended use in the opening lines.",
+    task_hits = _count_hits(prompt_lower, ["task type", "image type", "intended", "create"])
+    dimensions["task_contract"] = _dimension(
+        5 if task_hits >= 4 else 3 if task_hits >= 2 else 1,
+        "Task type, image type, and intent are visible." if task_hits >= 4 else "Task contract is incomplete.",
+        "Weak task contracts make the output drift toward generic image generation.",
+        "State task_type, image_type, intended_use, and the requested output form near the top.",
     )
 
-    ref_ok = _reference_roles_are_clear(reference_interpretation, ref_count)
-    dimensions["reference_role_clarity"] = _dimension(
-        5 if ref_ok else 2,
-        "Reference image roles are explicitly assigned."
-        if ref_ok
-        else "Reference images exist but their roles are not clear.",
-        "Unclear reference roles can cause identity, pose, and lighting conflicts.",
-        "Assign each reference to identity or pose/composition.",
+    ref_ok = _reference_roles_are_clear(reference_interpretation, refs)
+    dimensions["reference_role_contract"] = _dimension(
+        5 if ref_ok else 1,
+        "Reference roles are explicit." if ref_ok else "Reference roles are missing or incomplete.",
+        "Unclear reference roles cause source contamination.",
+        "Assign every reference exactly one formal role and list it in the interpretation artifact.",
     )
 
-    identity_hits = _count_hits(
-        combined,
-        ["identity", "face", "age impression", "hairstyle", "silhouette", "costume"],
-    )
-    dimensions["identity_preservation"] = _dimension(
-        5 if identity_hits >= 5 else 4 if identity_hits >= 3 else 2,
-        "Identity preservation rules cover face, age, hair, silhouette, and costume."
-        if identity_hits >= 5
-        else "Identity preservation is present but incomplete.",
-        "Missing identity anchors can cause drift from the reference subject.",
-        "Add fixed face, age impression, hairstyle, silhouette, costume, and symbolic identity rules.",
+    pci_hits = _count_hits(prompt_lower, ["preserve", "change", "ignore"])
+    dimensions["preserve_change_ignore"] = _dimension(
+        5 if pci_hits >= 3 else 1,
+        "Preserve / Change / Ignore is present." if pci_hits >= 3 else "Preserve / Change / Ignore is missing.",
+        "Without PCI, the generator cannot separate fixed, mutable, and ignored information.",
+        "Place Preserve, Change, and Ignore before the visual scene description.",
     )
 
-    composition_hits = _count_hits(
-        prompt_lower,
-        ["composition", "framing", "portrait", "body", "camera", "pose", "layout"],
-    )
-    dimensions["composition_specificity"] = _dimension(
-        5 if composition_hits >= 5 else 4 if composition_hits >= 3 else 2,
-        "Framing, camera, pose, and layout are specified."
-        if composition_hits >= 5
-        else "Composition has some direction but needs sharper framing or pose control.",
-        "Loose composition can reduce mobile readability and subject focus.",
-        "Specify framing, camera angle, pose, and layout priority.",
+    preflight_hits = _count_hits(prompt_lower, ["quality preflight", "reference authority", "reference contamination", "post-generation quality checks"])
+    dimensions["preflight_visibility"] = _dimension(
+        5 if preflight_hits >= 3 else 3 if preflight_hits >= 1 else 1,
+        "Preflight and contamination controls are visible." if preflight_hits >= 3 else "Preflight controls are thin.",
+        "Hidden or missing preflight checks allow unresolved conflicts into the final prompt.",
+        "Surface reference authority, contamination guards, and quality checks before generation.",
     )
 
-    costume_hits = _count_hits(
-        combined,
-        ["costume", "robe", "clothing", "hierarchy", "ornament", "prop", "symbolic"],
-    )
-    dimensions["costume_and_prop_hierarchy"] = _dimension(
-        5 if costume_hits >= 5 else 4 if costume_hits >= 3 else 3,
-        "Costume and symbolic hierarchy are strongly controlled."
-        if costume_hits >= 5
-        else "Costume direction is usable but could name key layers or props.",
-        "Weak hierarchy can produce fragmented clothing or random ornaments.",
-        "Name the core costume silhouette, major props, and ornament priority.",
+    output_hits = _count_hits(prompt_lower, ["output constraints", "aspect ratio", "resolution", "exactly"])
+    dimensions["output_constraints"] = _dimension(
+        5 if output_hits >= 4 else 3 if output_hits >= 2 else 1,
+        "Output constraints are explicit." if output_hits >= 4 else "Output constraints need more specificity.",
+        "Missing output constraints can add extra panels, text, or wrong dimensions.",
+        "State output count, visible text policy, aspect ratio, and resolution.",
     )
 
-    lighting_hits = _count_hits(
-        combined,
-        ["lighting", "light", "glow", "palette", "mood", "highlight", "amber", "gold"],
-    )
-    dimensions["lighting_and_mood_control"] = _dimension(
-        5 if lighting_hits >= 5 else 4 if lighting_hits >= 3 else 2,
-        "Lighting, mood, palette, and glow control are explicit."
-        if lighting_hits >= 5
-        else "Lighting is mentioned but needs clearer direction or risk controls.",
-        "Vague lighting can create noisy highlights or inconsistent mood.",
-        "Define light direction, mood, palette, and glow intensity.",
+    negative_hits = negative_prompt.count("## ") + _count_hits(negative_lower, ["avoid", "do not", "clean"])
+    dimensions["negative_controls"] = _dimension(
+        5 if negative_hits >= 4 else 3 if negative_hits >= 2 else 1,
+        "Negative controls are present." if negative_hits >= 2 else "Negative controls are missing.",
+        "Missing avoid controls leaves artifact risks unbounded.",
+        "Include selected avoid modules or an explicit custom avoid list.",
     )
 
-    background_hits = _count_hits(
-        combined,
-        ["background", "environment", "temple", "shrine", "village", "mountain", "atmosphere"],
-    )
-    dimensions["background_control"] = _dimension(
-        5 if background_hits >= 4 else 4 if background_hits >= 2 else 2,
-        "Background role and cleanliness are controlled."
-        if background_hits >= 4
-        else "Background exists but needs stronger cleanliness or depth constraints.",
-        "Weak background control can create clutter or fake symbols.",
-        "State what the background should show and what it must avoid.",
+    contradictions = _contradictions(prompt_lower)
+    dimensions["contradiction_risk"] = _dimension(
+        5 if not contradictions else 1,
+        "No obvious contradiction detected." if not contradictions else "Contradictory instructions were detected.",
+        "Contradictions create unstable generation behavior.",
+        "Remove mutually exclusive text and visible-text instructions.",
     )
 
-    selected_module_count = negative_prompt.count("## ")
-    dimensions["negative_control_coverage"] = _dimension(
-        5 if selected_module_count >= 4 else 4 if selected_module_count >= 2 else 2,
-        f"{selected_module_count} negative modules are included."
-        if selected_module_count
-        else "No negative modules are included.",
-        "Low negative coverage can leave known artifact risks uncontrolled.",
-        "Select modules for render cleanliness, lighting, background, clothing, and anatomy as needed.",
-    )
-
-    mobile_hits = _count_hits(combined, ["mobile", "readable", "silhouette", "separation", "card"])
-    dimensions["mobile_readability"] = _dimension(
-        5 if mobile_hits >= 4 else 4 if mobile_hits >= 2 else 3,
-        "Mobile readability and subject separation are addressed."
-        if mobile_hits >= 4
-        else "The prompt is usable but could better protect small-screen readability.",
-        "Dense detail can fail when scaled down for game use.",
-        "Add mobile readability, clean silhouette, and subject-background separation rules.",
-    )
-
-    ambiguity_terms = ["maybe", "somehow", "various", "anything", "random", "unclear"]
-    ambiguity_count = _count_hits(prompt_lower, ambiguity_terms)
-    dimensions["ambiguity_risk"] = _dimension(
-        5 if ambiguity_count == 0 else 4 if ambiguity_count <= 1 else 2,
-        "Ambiguity risk is low."
-        if ambiguity_count == 0
-        else "Some vague terms remain in the prompt.",
-        "Ambiguous language can cause unstable generation choices.",
-        "Replace vague terms with concrete visual constraints.",
-    )
-
-    word_count = len(final_prompt.split())
-    dimensions["prompt_clutter_risk"] = _dimension(
-        5 if 180 <= word_count <= 850 else 4 if word_count < 1000 else 2,
-        f"Prompt length is controlled at about {word_count} words."
-        if word_count <= 850
-        else f"Prompt is long at about {word_count} words.",
-        "Overloaded prompts can dilute priorities or introduce contradictions.",
-        "Remove repeated adjectives and keep only priority controls.",
-    )
-
-    intended_ok = bool(intended_use) and intended_use in (prompt_lower + " " + settings_text)
-    dimensions["intended_use_fit"] = _dimension(
-        5 if intended_ok and _has(combined, ["game", "card", "illustration", "mobile"]) else 4 if intended_ok else 2,
-        "The prompt is tailored to the intended use."
-        if intended_ok
-        else "The intended use is missing or not reflected in the prompt.",
-        "If the target use is unclear, composition and quality choices may drift.",
-        "Repeat the intended use and adapt framing/readability to that use.",
-    )
-
-    critical_issues = _critical_issues(
-        prompt_lower,
-        combined,
-        generation_settings,
-        reference_interpretation.lower(),
-        image_type,
-        ref_count,
-    )
+    critical_issues = _critical_issues(prompt_lower, generation_settings, reference_lower, refs) + contradictions
     total_score = sum(item["score"] for item in dimensions.values())
     average_score = round(total_score / len(DIMENSIONS), 2)
-    if critical_issues or average_score < 3.4:
-        recommendation = "block"
-    elif average_score >= 4.2:
-        recommendation = "pass"
-    else:
-        recommendation = "revise"
-
+    recommendation = "block" if critical_issues or average_score < 3.4 else "pass" if average_score >= 4.2 else "revise"
     top_weaknesses = [
         f"{name}: {data['suggested_improvement']}"
         for name, data in sorted(dimensions.items(), key=lambda item: item[1]["score"])[:3]
@@ -224,10 +124,11 @@ def score_prompt_package(
 
     return {
         "asset_name": str(generation_settings.get("asset_name", "unknown")),
+        "task_type": str(generation_settings.get("task_type", "")),
         "image_type": str(generation_settings.get("image_type", "")),
         "intended_use": str(generation_settings.get("intended_use", "")),
         "total_score": total_score,
-        "max_score": 60,
+        "max_score": len(DIMENSIONS) * 5,
         "average_score": average_score,
         "recommendation": recommendation,
         "critical_issues": critical_issues,
@@ -236,31 +137,27 @@ def score_prompt_package(
     }
 
 
-def _critical_issues(
-    prompt_lower: str,
-    combined: str,
-    generation_settings: dict[str, Any],
-    reference_interpretation: str,
-    image_type: str,
-    ref_count: int,
-) -> list[str]:
+def _critical_issues(prompt_lower: str, settings: dict[str, Any], reference_lower: str, refs: Any) -> list[str]:
     issues: list[str] = []
-    if not _has(prompt_lower, ["depict", "subject", "character", "deity", "portrait"]):
-        issues.append("no clear subject")
-    if not _reference_roles_are_clear(reference_interpretation, ref_count):
-        issues.append("missing reference role assignment when references exist")
-    if _has(image_type, ["character", "deity", "portrait", "card", "story"]) and not _has(
-        combined, ["identity", "face", "hairstyle", "age impression"]
-    ):
-        issues.append("no identity preservation rule for character/deity work")
-    if _has(image_type + " " + str(generation_settings.get("intended_use", "")).lower(), ["folk", "deity", "game", "card"]) and not _has(
-        combined, ["random text", "floating glyph", "unreadable glyph", "code fragments"]
-    ):
-        issues.append("random text/glyph avoidance missing for folk-belief/deity/game-card work")
-    if not generation_settings.get("size") or not _has(prompt_lower, ["aspect ratio", "resolution"]):
+    if not settings.get("task_type"):
+        issues.append("missing task_type")
+    if not all(settings.get(key) for key in ["preserve", "change", "ignore"]):
+        issues.append("missing Preserve / Change / Ignore contract")
+    if not _reference_roles_are_clear(reference_lower, refs):
+        issues.append("missing formal reference role assignment")
+    if not _has(prompt_lower, ["main subject", "subject correctness", "requested subject"]):
+        issues.append("no clear subject contract")
+    if not settings.get("size") or not _has(prompt_lower, ["aspect ratio", "resolution"]):
         issues.append("output size or aspect ratio missing")
-    if "include visible text" in prompt_lower and "do not include text" in prompt_lower:
-        issues.append("prompt contradicts itself")
+    return issues
+
+
+def _contradictions(prompt_lower: str) -> list[str]:
+    issues: list[str] = []
+    if "include visible text" in prompt_lower and "do not add labels" in prompt_lower:
+        issues.append("visible text policy contradicts itself")
+    if "no reference images" in prompt_lower and "reference 1 =" in prompt_lower:
+        issues.append("reference presence contradicts itself")
     return issues
 
 
